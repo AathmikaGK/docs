@@ -535,7 +535,7 @@ When returning [`Command`](https://langchain-ai.github.io/langgraphjs/reference/
 
 </Note>
 
-Check out this [how-to guide](/oss/javascript/langgraph/graph-api.md#combine-control-flow-and-state-updates-with-command) for an end-to-end example of how to use [`Command`](https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.Command.html).
+Check out this [how-to guide](/oss/javascript/langgraph/use-graph-api#combine-control-flow-and-state-updates-with-command) for an end-to-end example of how to use [`Command`](https://langchain-ai.github.io/langgraphjs/reference/classes/langgraph.Command.html).
 
 ### When should I use Command instead of conditional edges?
 
@@ -596,13 +596,13 @@ When you send updates from a subgraph node to a parent graph node for a key that
 
 This is particularly useful when implementing [multi-agent handoffs](/oss/javascript/langchain/multi-agent#handoffs).
 
-Check out [this guide](/oss/javascript/langgraph/graph-api.md#navigate-to-a-node-in-a-parent-graph) for detail.
+Check out [this guide](/oss/javascript/langgraph/use-graph-api#navigate-to-a-node-in-a-parent-graph) for detail.
 
 ### Using inside tools
 
 A common use case is updating graph state from inside a tool. For example, in a customer support application you might want to look up customer information based on their account number or ID in the beginning of the conversation.
 
-Refer to [this guide](/oss/javascript/langgraph/graph-api.md#use-inside-tools) for detail.
+Refer to [this guide](/oss/javascript/langgraph/use-graph-api#use-inside-tools) for detail.
 
 ### Human-in-the-loop
 
@@ -697,7 +697,7 @@ await graph.invoke(inputs, {
 
 ## Visualization
 
-It's often nice to be able to visualize graphs, especially as they get more complex. LangGraph comes with several built-in ways to visualize graphs. See [this how-to guide](/oss/javascript/langgraph/graph-api.md#visualize-your-graph) for more info.
+It's often nice to be able to visualize graphs, especially as they get more complex. LangGraph comes with several built-in ways to visualize graphs. See [this how-to guide](/oss/javascript/langgraph/use-graph-api#visualize-your-graph) for more info.
 
 ---
 
