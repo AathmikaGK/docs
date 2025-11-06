@@ -36,6 +36,8 @@ agent = create_deep_agent(
 ```
 
 
+
+
 **How it works:**
 - Stores files in LangGraph agent state for the current thread.
 - Persists across multiple agent turns on the same thread via checkpoints.
@@ -50,13 +52,15 @@ agent = create_deep_agent(
 from deepagents.backends import FilesystemBackend
 
 agent = create_deep_agent(
-    backend=FilesystemBackend(root_dir="/Users/nh/Desktop/")
+    backend=FilesystemBackend(root_dir=".", virtual_mode=True)
 )
 ```
 
+
+
+
 **How it works:**
 - Reads/writes real files under a configurable `root_dir`.
-- Note: `root_dir` must be an absolute path.
 - You can optionally set `virtual_mode=True` to sandbox and normalize paths under `root_dir`.
 - Uses secure path resolution, prevents unsafe symlink traversal when possible, can use ripgrep for fast `grep`.
 
@@ -68,12 +72,17 @@ agent = create_deep_agent(
 ### StoreBackend (LangGraph Store)
 
 ```python
+from langgraph.store.memory import InMemoryStore
 from deepagents.backends import StoreBackend
 
 agent = create_deep_agent(
-    backend=(lambda rt: StoreBackend(rt))   # Note that the tools access Store through the runtime.store
+    backend=(lambda rt: StoreBackend(rt)),   # Note that the tools access Store through the runtime.store
+    store=InMemoryStore()
 )
 ```
+
+
+
 
 **How it works:**
 - Stores files in a LangGraph `BaseStore` provided by the runtime, enabling cross‑thread durable storage.
@@ -87,19 +96,23 @@ agent = create_deep_agent(
 
 ```python
 from deepagents import create_deep_agent
-from deepagents.backends import FilesystemBackend
-from deepagents.backends.composite import build_composite_state_backend
+from deepagents.backends import CompositeBackend, StateBackend, StoreBackend
+from langgraph.store.memory import InMemoryStore
 
 composite_backend = lambda rt: CompositeBackend(
-    default=StateBackend(rt)
+    default=StateBackend(rt),
     routes={
         "/memories/": StoreBackend(rt),
-        "/docs/": CustomBackend()
     }
 )
 
-agent = create_deep_agent(backend=composite_backend)
+agent = create_deep_agent(
+    backend=composite_backend,
+    store=InMemoryStore()  # Store passed to create_deep_agent, not backend
+)
 ```
+
+
 
 
 **How it works:**
@@ -126,17 +139,19 @@ Route parts of the namespace to different backends. Commonly used to persist `/m
 
 ```python
 from deepagents import create_deep_agent
-from deepagents.backends import FilesystemBackend
-from deepagents.backends.composite import build_composite_state_backend
+from deepagents.backends import CompositeBackend, StateBackend, FilesystemBackend
 
 composite_backend = lambda rt: CompositeBackend(
+    default=StateBackend(rt),
     routes={
-        "/memories/": FilesystemBackend(root_dir="/deepagents/myagent"),
+        "/memories/": FilesystemBackend(root_dir="/deepagents/myagent", virtual_mode=True),
     },
 )
 
 agent = create_deep_agent(backend=composite_backend)
 ```
+
+
 
 
 Behavior:

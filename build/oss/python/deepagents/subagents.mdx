@@ -87,6 +87,9 @@ agent = create_deep_agent(
 )
 ```
 
+
+
+
 ## Using CompiledSubAgent
 
 For more complex use cases, you can provide your own pre-built LangGraph graph as a subagent:
@@ -214,7 +217,7 @@ subagents = [
         "description": "Analyzes financial data and market trends",
         "system_prompt": "You are an expert financial analyst...",
         "tools": [get_stock_price, analyze_fundamentals],
-        "model": "openai:gpt-4o",  # Better for numerical analysis
+        "model": "openai:gpt-5",  # Better for numerical analysis
     },
 ]
 ```
@@ -303,6 +306,7 @@ Each subagent works with clean context focused only on its task.
 **Solutions**:
 
 1. **Make descriptions more specific:**
+
    ```python
    # ✅ Good
    {"name": "research-specialist", "description": "Conducts in-depth research on specific topics using web search. Use when you need detailed information that requires multiple searches."}
@@ -311,7 +315,11 @@ Each subagent works with clean context focused only on its task.
    {"name": "helper", "description": "helps with stuff"}
    ```
 
+
+
+
 2. **Instruct main agent to delegate:**
+
    ```python
    agent = create_deep_agent(
        system_prompt="""...your instructions...
@@ -322,6 +330,9 @@ Each subagent works with clean context focused only on its task.
    )
    ```
 
+
+
+
 ### Context still getting bloated
 
 **Problem**: Context fills up despite using subagents.
@@ -329,6 +340,7 @@ Each subagent works with clean context focused only on its task.
 **Solutions**:
 
 1. **Instruct subagent to return concise results:**
+
    ```python
    system_prompt="""...
 
@@ -337,7 +349,11 @@ Each subagent works with clean context focused only on its task.
    Your response should be under 500 words."""
    ```
 
+
+
+
 2. **Use filesystem for large data:**
+
    ```python
    system_prompt="""When you gather large amounts of data:
    1. Save raw data to /data/raw_results.txt
@@ -346,6 +362,9 @@ Each subagent works with clean context focused only on its task.
 
    This keeps context clean."""
    ```
+
+
+
 
 ### Wrong subagent being selected
 
