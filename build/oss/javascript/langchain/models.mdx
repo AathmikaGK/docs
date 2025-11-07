@@ -326,7 +326,9 @@ Models can request to call tools that perform tasks such as fetching data from a
     You may hear the term "function calling". We use this interchangeably with "tool calling".
 </Note>
 
-Here's the basic tool calling flow:
+Here's the basic tool calling flow between a user and a model:
+
+
 
 ```mermaid
 sequenceDiagram
@@ -338,8 +340,8 @@ sequenceDiagram
     M->>M: Analyze request & decide tools needed
 
     par Parallel Tool Calls
-        M->>T: get_weather("San Francisco")
-        M->>T: get_weather("New York")
+        M->>T: getWeather("San Francisco")
+        M->>T: getWeather("New York")
     end
 
     par Tool Execution
@@ -350,6 +352,7 @@ sequenceDiagram
     M->>M: Process results & generate response
     M->>U: "SF: 72°F sunny, NYC: 68°F cloudy"
 ```
+
 
 
 
