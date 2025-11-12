@@ -1745,6 +1745,7 @@
       "source": "/oss/javascript/langchain/middleware",
       "destination": "/oss/javascript/langchain/middleware/index"
     },
+    {
       "source": "/oss/python/integrations/tools/toolbox",
       "destination": "/oss/python/integrations/tools/mcp_toolbox"
     },
