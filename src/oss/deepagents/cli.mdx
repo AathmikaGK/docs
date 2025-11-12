@@ -1,0 +1,331 @@
+---
+title: Deep Agents CLI
+sidebarTitle: CLI
+description: Interactive command-line interface for building with Deep Agents
+---
+
+:::python
+
+The Deep Agents CLI is a terminal interface for building agents with persistent memory. Agents maintain context across sessions, store learned conventions in markdown files, and execute code with human-in-the-loop controls.
+
+**Key capabilities**:
+- Persistent memory stored in `~/.deepagents/` as organized markdown files
+- File operations (read, write, edit) with context management
+- Shell command execution with approval gates
+- Web search via Tavily API
+- Task planning with visual todo lists
+- Multi-agent support for separate projects
+
+<Frame>
+  <iframe
+    width="100%"
+    height="400"
+    src="https://www.youtube.com/embed/IrnacLa9PJc"
+    title="Deep Agents CLI Demo"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  ></iframe>
+</Frame>
+
+## Installation
+
+Run with `uvx` (recommended):
+
+```bash
+uvx deepagents-cli
+```
+
+Or install locally:
+
+<CodeGroup>
+```bash pip
+pip install deepagents-cli
+```
+
+```bash uv
+uv add deepagents-cli
+```
+
+```bash poetry
+poetry add deepagents-cli
+```
+</CodeGroup>
+
+## Prerequisites
+
+Configure API keys as environment variables or in a `.env` file:
+
+```bash
+# Required: LLM provider
+export ANTHROPIC_API_KEY="your-api-key"  # Default
+# OR
+export OPENAI_API_KEY="your-openai-api-key"
+
+# Optional: Web search
+export TAVILY_API_KEY="your-tavily-api-key"
+```
+
+The CLI uses Anthropic Claude Sonnet 4 by default. If both keys are set, Anthropic takes precedence.
+
+## Basic usage
+
+Start an interactive session:
+
+```bash
+uvx deepagents-cli
+```
+
+Give the agent a task at the prompt:
+
+```bash
+> Create a Python script that prints "Hello, World!"
+```
+
+The agent plans and executes the task. You'll be prompted to approve tool usage.
+
+## Persistent memory
+
+Agents store information across sessions in `~/.deepagents/AGENT_NAME/memories/` as markdown files. Each file represents a topic (for example, `api-conventions.md` or `database-schema.md`).
+
+### Memory protocol
+
+The agent follows this protocol during conversations:
+
+1. Search memory files for relevant information
+2. Use tools (web search, file operations) to fill knowledge gaps
+3. Save important information to memory
+
+### Teaching conventions
+
+```bash
+# First session
+uvx deepagents-cli --agent backend-dev
+> Our API uses snake_case for parameters and includes created_at/updated_at timestamps
+```
+
+In subsequent sessions, the agent applies these conventions automatically:
+
+```bash
+# Later session
+uvx deepagents-cli --agent backend-dev
+> Create a /users endpoint
+# Agent applies snake_case and adds timestamps without prompting
+```
+
+View memory files directly:
+
+```bash
+ls ~/.deepagents/backend-dev/memories/
+cat ~/.deepagents/backend-dev/memories/api-conventions.md
+```
+
+## Built-in tools
+
+<CardGroup cols={2}>
+  <Card title="File operations" icon="file">
+    Read, write, and edit files in your codebase
+  </Card>
+  <Card title="Shell commands" icon="terminal">
+    Execute bash commands with approval gates
+  </Card>
+  <Card title="Web search" icon="magnifying-glass">
+    Search the internet (requires Tavily API key)
+  </Card>
+  <Card title="HTTP requests" icon="globe">
+    Make API requests to external services
+  </Card>
+  <Card title="Task planning" icon="list-check">
+    Break down and track multi-step tasks
+  </Card>
+  <Card title="Memory" icon="brain">
+    Store and retrieve information across sessions
+  </Card>
+</CardGroup>
+
+## Command-line options
+
+### `--agent`
+
+Specify an agent name to maintain separate memory stores. Each agent has its own conversation history, file system state, and memories.
+
+```bash
+uvx deepagents-cli --agent backend-dev
+uvx deepagents-cli --agent researcher
+```
+
+### `--auto-approve`
+
+Execute tools without confirmation prompts. Toggle during a session with `Ctrl+T`.
+
+```bash
+uvx deepagents-cli --auto-approve
+```
+
+<Warning>
+Use auto-approve only in trusted or sandboxed environments.
+</Warning>
+
+### `--sandbox`
+
+Execute code in remote sandboxes (Modal, Daytona, or Runloop):
+
+```bash
+uvx deepagents-cli --sandbox modal
+```
+
+### `--sandbox-id`
+
+Reuse an existing sandbox (skips creation and cleanup):
+
+```bash
+uvx deepagents-cli --sandbox modal --sandbox-id sb-12345
+```
+
+### `--sandbox-setup`
+
+Run a setup script after sandbox creation:
+
+```bash
+uvx deepagents-cli --sandbox modal --sandbox-setup ./setup.sh
+```
+
+## Commands
+
+### `list`
+
+List all agents:
+
+```bash
+uvx deepagents-cli list
+```
+
+### `help`
+
+Show help information:
+
+```bash
+uvx deepagents-cli help
+```
+
+### `reset`
+
+Clear an agent's memory and state:
+
+```bash
+uvx deepagents-cli reset --agent my-agent
+
+# Copy prompt from another agent
+uvx deepagents-cli reset --agent my-agent --target source-agent
+```
+
+## Interactive mode
+
+### Slash commands
+
+```bash
+> /tokens  # View token usage
+> /clear   # Clear conversation history
+> /exit    # Exit session
+```
+
+### Bash commands
+
+Prefix commands with `!`:
+
+```bash
+> !git status
+> !pytest tests/
+```
+
+### Keyboard shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Submit message |
+| `Alt+Enter` | Insert newline |
+| `Ctrl+E` | Open external editor |
+| `Ctrl+T` | Toggle auto-approve |
+| `Ctrl+C` | Interrupt operation |
+| `Ctrl+D` | Exit session |
+
+## Examples
+
+### Specialized agents
+
+Create dedicated agents for different projects:
+
+```bash
+uvx deepagents-cli --agent backend-dev
+> Build a FastAPI application with authentication
+
+uvx deepagents-cli --agent frontend-dev
+> Create a React dashboard component
+
+uvx deepagents-cli --agent researcher
+> Research LLM fine-tuning techniques and summarize
+```
+
+### Teaching conventions
+
+```bash
+uvx deepagents-cli --agent backend-dev
+
+> Our API endpoints use snake_case, include timestamps,
+> return 200/400 status codes, and have request IDs
+
+# Later session - agent remembers
+> Create a /products endpoint
+```
+
+### Research workflow
+
+```bash
+export TAVILY_API_KEY="your-key"
+uvx deepagents-cli --agent researcher
+
+> Research LangGraph v1.0 features, performance improvements,
+> and breaking changes. Create a report with code examples.
+```
+
+### Sandboxed execution
+
+```bash
+uvx deepagents-cli --agent experiment --sandbox modal --auto-approve
+
+> Write and test a pandas script that processes large CSV files
+```
+
+### Managing agents
+
+```bash
+uvx deepagents-cli list
+uvx deepagents-cli reset --agent experiment
+uvx deepagents-cli reset --agent new-backend --target backend-dev
+```
+
+## Troubleshooting
+
+**Authentication errors**: Verify API keys are set:
+```bash
+echo $ANTHROPIC_API_KEY
+```
+
+**Sandbox creation fails**: Check provider credentials, network connectivity, and quota limits.
+
+**Token limit exceeded**: Start a new agent, use `/clear`, or break tasks into smaller chunks.
+
+## Related topics
+
+- [Customization](/oss/deepagents/customization) - Configure agents and tools
+- [Long-term memory](/oss/deepagents/long-term-memory) - Persistent memory across threads
+- [Backends](/oss/deepagents/backends) - Remote execution environments
+- [Human-in-the-loop](/oss/deepagents/human-in-the-loop) - Approval controls
+
+:::
+
+:::js
+
+The Deep Agents CLI is currently Python-only. For JavaScript/TypeScript development, use the [programmatic API](/oss/deepagents/quickstart) to build your own agent interfaces.
+
+:::
