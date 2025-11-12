@@ -36,9 +36,9 @@ Automatically summarize conversation history when approaching token limits, pres
 - Applications where preserving full conversation context matters
 </Tip>
 
+:::python
 **API reference:** @[`SummarizationMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import SummarizationMiddleware
@@ -310,7 +310,9 @@ Pause agent execution for human approval, editing, or rejection of tool calls be
 - Long-running conversations where human feedback guides the agent
 </Tip>
 
+:::python
 **API reference:** @[`HumanInTheLoopMiddleware`]
+:::
 
 <Note>
     **Important:** Human-in-the-loop middleware requires a [checkpointer](/oss/langgraph/persistence#checkpoints) to maintain state across interruptions.
@@ -432,9 +434,9 @@ Limit the number of model calls to prevent infinite loops or excessive costs.
 - Testing agent behavior within specific call budgets
 </Tip>
 
+:::python
 **API reference:** @[`ModelCallLimitMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelCallLimitMiddleware
@@ -568,9 +570,9 @@ Control agent execution by limiting the number of tool calls, either globally ac
 - Protecting against runaway agent loops
 </Tip>
 
+:::python
 **API reference:** @[`ToolCallLimitMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import ToolCallLimitMiddleware
@@ -725,9 +727,9 @@ Automatically fallback to alternative models when the primary model fails.
 - Provider redundancy across OpenAI, Anthropic, etc.
 </Tip>
 
+:::python
 **API reference:** @[`ModelFallbackMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelFallbackMiddleware
@@ -849,9 +851,9 @@ Detect and handle Personally Identifiable Information (PII) in conversations usi
 - Any application handling sensitive user data
 </Tip>
 
+:::python
 **API reference:** @[`PIIMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import PIIMiddleware
@@ -1025,9 +1027,9 @@ Equip agents with task planning and tracking capabilities for complex multi-step
     This middleware automatically provides agents with a `write_todos` tool and system prompts to guide effective task planning.
 </Note>
 
+:::python
 **API reference:** @[`TodoListMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import TodoListMiddleware
@@ -1154,9 +1156,9 @@ Use an LLM to intelligently select relevant tools before calling the main model.
 - Improving model focus and accuracy
 </Tip>
 
+:::python
 **API reference:** @[`LLMToolSelectorMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import LLMToolSelectorMiddleware
@@ -1293,9 +1295,9 @@ Automatically retry failed tool calls with configurable exponential backoff.
 - Building resilient agents that gracefully handle temporary errors
 </Tip>
 
+:::python
 **API reference:** @[`ToolRetryMiddleware`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import ToolRetryMiddleware
@@ -1413,9 +1415,9 @@ Emulate tool execution using an LLM for testing purposes, replacing actual tool 
 - Prototyping agent workflows before implementing actual tools
 </Tip>
 
+:::python
 **API reference:** @[`LLMToolEmulator`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import LLMToolEmulator
@@ -1434,6 +1436,7 @@ agent = create_agent(
 This middleware is only available in Python. For JavaScript/TypeScript, consider creating mock tool implementations for testing.
 :::
 
+:::python
 <Accordion title="Configuration options">
 
 <ParamField body="tools" type="list[str | BaseTool]">
@@ -1445,7 +1448,9 @@ This middleware is only available in Python. For JavaScript/TypeScript, consider
 </ParamField>
 
 </Accordion>
+:::
 
+:::python
 <Accordion title="Full example">
 
 The middleware uses an LLM to generate plausible responses for tool calls instead of executing the actual tools.
@@ -1492,6 +1497,7 @@ agent3 = create_agent(
 :::
 
 </Accordion>
+:::
 
 ---
 
@@ -1506,9 +1512,9 @@ Manage conversation context by trimming, summarizing, or clearing tool uses.
 - Custom context management strategies
 </Tip>
 
+:::python
 **API reference:** @[`ContextEditingMiddleware`], @[`ClearToolUsesEdit`]
 
-:::python
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import ContextEditingMiddleware, ClearToolUsesEdit
@@ -1716,9 +1722,9 @@ Reduce costs by caching repetitive prompt prefixes with Anthropic models.
     Learn more about [Anthropic Prompt Caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching#cache-limitations) strategies and limitations.
 </Info>
 
+:::python
 **API reference:** @[`AnthropicPromptCachingMiddleware`]
 
-:::python
 ```python
 from langchain_anthropic import ChatAnthropic
 from langchain_anthropic.middleware import AnthropicPromptCachingMiddleware
