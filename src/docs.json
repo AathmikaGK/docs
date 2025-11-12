@@ -165,8 +165,15 @@
                         "oss/python/langchain/tools",
                         "oss/python/langchain/short-term-memory",
                         "oss/python/langchain/streaming",
-                        "oss/python/langchain/middleware",
                         "oss/python/langchain/structured-output"
+                      ]
+                    },
+                    {
+                      "group": "Middleware",
+                      "pages": [
+                        "oss/python/langchain/middleware/index",
+                        "oss/python/langchain/middleware/built-in",
+                        "oss/python/langchain/middleware/custom"
                       ]
                     },
                     {
@@ -486,8 +493,15 @@
                         "oss/javascript/langchain/tools",
                         "oss/javascript/langchain/short-term-memory",
                         "oss/javascript/langchain/streaming",
-                        "oss/javascript/langchain/middleware",
                         "oss/javascript/langchain/structured-output"
+                      ]
+                    },
+                    {
+                      "group": "Middleware",
+                      "pages": [
+                        "oss/javascript/langchain/middleware/index",
+                        "oss/javascript/langchain/middleware/built-in",
+                        "oss/javascript/langchain/middleware/custom"
                       ]
                     },
                     {
