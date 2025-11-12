@@ -171,7 +171,7 @@
                     {
                       "group": "Middleware",
                       "pages": [
-                        "oss/python/langchain/middleware/index",
+                        "oss/python/langchain/middleware/overview",
                         "oss/python/langchain/middleware/built-in",
                         "oss/python/langchain/middleware/custom"
                       ]
@@ -499,7 +499,7 @@
                     {
                       "group": "Middleware",
                       "pages": [
-                        "oss/javascript/langchain/middleware/index",
+                        "oss/javascript/langchain/middleware/overview",
                         "oss/javascript/langchain/middleware/built-in",
                         "oss/javascript/langchain/middleware/custom"
                       ]
@@ -1739,11 +1739,11 @@
     },
     {
       "source": "/oss/python/langchain/middleware",
-      "destination": "/oss/python/langchain/middleware/index"
+      "destination": "/oss/python/langchain/middleware/overview"
     },
     {
       "source": "/oss/javascript/langchain/middleware",
-      "destination": "/oss/javascript/langchain/middleware/index"
+      "destination": "/oss/javascript/langchain/middleware/overview"
     },
     {
       "source": "/oss/python/integrations/tools/toolbox",
