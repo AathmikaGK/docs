@@ -237,10 +237,10 @@ const createRetryMiddleware = (maxRetries: number = 3) => {
 You can create middleware in two ways:
 
 <CardGroup cols={2}>
-  <Card title="Decorator-based middleware" icon="gear" href="#decorator-based-middleware">
+  <Card title="Decorator-based middleware" icon="at" href="#decorator-based-middleware">
     Quick and simple for single-hook middleware. Use decorators to wrap individual functions.
   </Card>
-  <Card title="Class-based middleware" icon="gears" href="#class-based-middleware">
+  <Card title="Class-based middleware" icon="brackets-curly" href="#class-based-middleware">
     More powerful for complex middleware with multiple hooks or configuration.
   </Card>
 </CardGroup>
@@ -525,9 +525,11 @@ __Agent loop starts__
 6. `middleware3.before_model()`
 
 **Wrap hooks nest like function calls:**
+
 7. `middleware1.wrap_model_call()` → `middleware2.wrap_model_call()` → `middleware3.wrap_model_call()` → model
 
 **After hooks run in reverse order:**
+
 8. `middleware3.after_model()`
 9. `middleware2.after_model()`
 10. `middleware1.after_model()`
