@@ -283,7 +283,7 @@
                       ]
                     },
                     {
-                      "group": "Deep Agents CLI",
+                      "group": "Command line interface",
                       "pages": [
                         "oss/python/deepagents/cli"
                       ]
