@@ -3,44 +3,12 @@ title: Overview
 description: Control and customize agent execution at every step
 ---
 
-Middleware provides a way to more tightly control what happens inside the agent.
+Middleware provides a way to more tightly control what happens inside the agent. Middleware is useful for the following:
 
-The core agent loop involves calling a model, letting it choose tools to execute, and then finishing when it calls no more tools:
-
-<div style={{ display: "flex", justifyContent: "center" }}>
-    <img
-        src="/oss/images/core_agent_loop.png"
-        alt="Core agent loop diagram"
-        className="rounded-lg"
-    />
-</div>
-
-Middleware exposes hooks before and after each of those steps:
-
-<div style={{ display: "flex", justifyContent: "center" }}>
-    <img
-        src="/oss/images/middleware_final.png"
-        alt="Middleware flow diagram"
-        className="rounded-lg"
-    />
-</div>
-
-## What can middleware do?
-
-<CardGroup cols={2}>
-    <Card title="Monitor" icon="chart-line">
-        Track agent behavior with logging, analytics, and debugging
-    </Card>
-    <Card title="Modify" icon="pencil">
-        Transform prompts, tool selection, and output formatting
-    </Card>
-    <Card title="Control" icon="sliders">
-        Add retries, fallbacks, and early termination logic
-    </Card>
-    <Card title="Enforce" icon="shield">
-        Apply rate limits, guardrails, and PII detection
-    </Card>
-</CardGroup>
+- Tracking agent behavior with logging, analytics, and debugging.
+- Transforming prompts, [tool selection](/oss/langchain/middleware/built-in#llm-tool-selector), and output formatting.
+- Adding [retries](/oss/langchain/middleware/built-in#tool-retry), [fallbacks](/oss/langchain/middleware/built-in#model-fallback), and early termination logic.
+- Applying [rate limits](/oss/langchain/middleware/built-in#model-call-limit), guardrails, and [PII detection](/oss/langchain/middleware/built-in#pii-detection).
 
 :::python
 Add middleware by passing them to @[`create_agent`]:
@@ -79,19 +47,39 @@ const agent = createAgent({
 ```
 :::
 
-## Next steps
+## The agent loop
 
-<CardGroup cols={2}>
-    <Card title="Built-in middleware" icon="box" href="/oss/langchain/middleware/built-in">
-        Explore prebuilt middleware for common use cases
-    </Card>
-    <Card title="Custom middleware" icon="code" href="/oss/langchain/middleware/custom">
-        Build your own middleware with hooks and decorators
-    </Card>
-</CardGroup>
+The core agent loop involves calling a model, letting it choose tools to execute, and then finishing when it calls no more tools:
+
+<img
+    src="/oss/images/core_agent_loop.png"
+    alt="Core agent loop diagram"
+    style={{height: "200px", width: "auto", justifyContent: "center"}}
+    className="rounded-lg block mx-auto"
+/>
+
+Middleware exposes hooks before and after each of those steps:
+
+<img
+    src="/oss/images/middleware_final.png"
+    alt="Middleware flow diagram"
+    style={{height: "300px", width: "auto", justifyContent: "center"}}
+    className="rounded-lg mx-auto"
+/>
 
 ## Additional resources
 
-- [Middleware API reference](https://reference.langchain.com/python/langchain/middleware/)
-- [Human-in-the-loop guide](/oss/langchain/human-in-the-loop)
-- [Testing agents](/oss/langchain/test)
+<CardGroup cols={2}>
+    <Card title="Built-in middleware" icon="box" href="/oss/langchain/middleware/built-in">
+        Explore built-in middleware for common use cases.
+    </Card>
+    <Card title="Custom middleware" icon="code" href="/oss/langchain/middleware/custom">
+        Build your own middleware with hooks and decorators.
+    </Card>
+    <Card title="Middleware API reference" icon="book" href="https://reference.langchain.com/python/langchain/middleware/">
+        Complete API reference for middleware.
+    </Card>
+    <Card title="Testing agents" icon="scale-unbalanced" href="/oss/langchain/test">
+        Test your agents with LangSmith.
+    </Card>
+</CardGroup>

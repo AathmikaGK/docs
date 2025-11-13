@@ -7,34 +7,28 @@ LangChain provides prebuilt middleware for common use cases. Each middleware is 
 
 ## Provider-agnostic middleware
 
-These middleware work with any LLM provider.
+The following middleware work with any LLM provider:
 
-| Middleware | Use case |
-|------------|----------|
-| [Summarization](#summarization) | Automatically summarize conversation history when approaching token limits |
-| [Human-in-the-loop](#human-in-the-loop) | Pause execution for human approval of tool calls |
-| [Model call limit](#model-call-limit) | Limit the number of model calls to prevent excessive costs |
-| [Tool call limit](#tool-call-limit) | Control tool execution by limiting call counts |
-| [Model fallback](#model-fallback) | Automatically fallback to alternative models when primary fails |
-| [PII detection](#pii-detection) | Detect and handle Personally Identifiable Information |
-| [To-do list](#to-do-list) | Equip agents with task planning and tracking capabilities |
-| [LLM tool selector](#llm-tool-selector) | Use an LLM to select relevant tools before calling main model |
-| [Tool retry](#tool-retry) | Automatically retry failed tool calls with exponential backoff |
-| [LLM tool emulator](#llm-tool-emulator) | Emulate tool execution using LLM for testing purposes |
-| [Context editing](#context-editing) | Manage conversation context by trimming or clearing tool uses |
-
----
+| Middleware | Description |
+|------------|-------------|
+| [Summarization](#summarization) | Automatically summarize conversation history when approaching token limits. |
+| [Human-in-the-loop](#human-in-the-loop) | Pause execution for human approval of tool calls. |
+| [Model call limit](#model-call-limit) | Limit the number of model calls to prevent excessive costs. |
+| [Tool call limit](#tool-call-limit) | Control tool execution by limiting call counts. |
+| [Model fallback](#model-fallback) | Automatically fallback to alternative models when primary fails. |
+| [PII detection](#pii-detection) | Detect and handle Personally Identifiable Information (PII). |
+| [To-do list](#to-do-list) | Equip agents with task planning and tracking capabilities. |
+| [LLM tool selector](#llm-tool-selector) | Use an LLM to select relevant tools before calling main model. |
+| [Tool retry](#tool-retry) | Automatically retry failed tool calls with exponential backoff. |
+| [LLM tool emulator](#llm-tool-emulator) | Emulate tool execution using anLLM for testing purposes. |
+| [Context editing](#context-editing) | Manage conversation context by trimming or clearing tool uses. |
 
 ### Summarization
 
-Automatically summarize conversation history when approaching token limits, preserving recent messages while compressing older context.
-
-<Tip>
-**Perfect for:**
-- Long-running conversations that exceed context windows
-- Multi-turn dialogues with extensive history
-- Applications where preserving full conversation context matters
-</Tip>
+Automatically summarize conversation history when approaching token limits, preserving recent messages while compressing older context. Summarization is useful for the following:
+- Long-running conversations that exceed context windows.
+- Multi-turn dialogues with extensive history.
+- Applications where preserving full conversation context matters.
 
 :::python
 **API reference:** @[`SummarizationMiddleware`]
@@ -297,28 +291,22 @@ const agent3 = createAgent({
 
 </Accordion>
 
----
 
 ### Human-in-the-loop
 
-Pause agent execution for human approval, editing, or rejection of tool calls before they execute.
+Pause agent execution for human approval, editing, or rejection of tool calls before they execute. [Human-in-the-loop](/oss/langchain/human-in-the-loop) is useful for the following:
 
-<Tip>
-**Perfect for:**
-- High-stakes operations requiring human approval (database writes, financial transactions)
-- Compliance workflows where human oversight is mandatory
-- Long-running conversations where human feedback guides the agent
-</Tip>
+- High-stakes operations requiring human approval (e.g. database writes, financial transactions).
+- Compliance workflows where human oversight is mandatory.
+- Long-running conversations where human feedback guides the agent.
 
 :::python
 **API reference:** @[`HumanInTheLoopMiddleware`]
 :::
 
-<Note>
-    **Important:** Human-in-the-loop middleware requires a [checkpointer](/oss/langgraph/persistence#checkpoints) to maintain state across interruptions.
-
-    See the [human-in-the-loop documentation](/oss/langchain/human-in-the-loop) for complete examples and integration patterns.
-</Note>
+<Warning>
+    Human-in-the-loop middleware requires a [checkpointer](/oss/langgraph/persistence#checkpoints) to maintain state across interruptions.
+</Warning>
 
 :::python
 ```python
@@ -367,72 +355,17 @@ const agent = createAgent({
 ```
 :::
 
-<Accordion title="Configuration options">
-
-:::python
-<ParamField body="interrupt_on" type="dict" required>
-    Mapping of tool names to approval configs. Values can be `True` (interrupt with default config), `False` (auto-approve), or an `InterruptOnConfig` object.
-</ParamField>
-
-<ParamField body="description_prefix" type="string" default="Tool execution requires approval">
-    Prefix for action request descriptions
-</ParamField>
-
-**`InterruptOnConfig` options:**
-
-<ParamField body="allowed_decisions" type="list[string]">
-    List of allowed decisions: `'approve'`, `'edit'`, or `'reject'`
-</ParamField>
-
-<ParamField body="description" type="string | callable">
-    Static string or callable function for custom description
-</ParamField>
-:::
-
-:::js
-<ParamField body="interruptOn" type="object" required>
-    Mapping of tool names to approval configs
-</ParamField>
-
-**Tool approval config options:**
-
-<ParamField body="allowAccept" type="boolean" default="false">
-    Whether approval is allowed
-</ParamField>
-
-<ParamField body="allowEdit" type="boolean" default="false">
-    Whether editing is allowed
-</ParamField>
-
-<ParamField body="allowRespond" type="boolean" default="false">
-    Whether responding/rejection is allowed
-</ParamField>
-:::
-
-</Accordion>
-
-<Accordion title="Full example">
-
-See the [human-in-the-loop guide](/oss/langchain/human-in-the-loop) for comprehensive examples showing how to:
-- Handle interruptions and resume execution
-- Implement custom approval workflows
-- Integrate with UI components
-- Manage conversation state across interruptions
-
-</Accordion>
-
----
+<Tip>
+    For complete examples, configuration options, and integration patterns, see the [Human-in-the-loop documentation](/oss/langchain/human-in-the-loop).
+</Tip>
 
 ### Model call limit
 
-Limit the number of model calls to prevent infinite loops or excessive costs.
+Limit the number of model calls to prevent infinite loops or excessive costs. Model call limit is useful for the following:
 
-<Tip>
-**Perfect for:**
-- Preventing runaway agents from making too many API calls
-- Enforcing cost controls on production deployments
-- Testing agent behavior within specific call budgets
-</Tip>
+- Preventing runaway agents from making too many API calls.
+- Enforcing cost controls on production deployments.
+- Testing agent behavior within specific call budgets.
 
 :::python
 **API reference:** @[`ModelCallLimitMiddleware`]
@@ -556,19 +489,15 @@ const agent = createAgent({
 
 </Accordion>
 
----
 
 ### Tool call limit
 
-Control agent execution by limiting the number of tool calls, either globally across all tools or for specific tools.
+Control agent execution by limiting the number of tool calls, either globally across all tools or for specific tools. Tool call limits are useful for the following:
 
-<Tip>
-**Perfect for:**
-- Preventing excessive calls to expensive external APIs
-- Limiting web searches or database queries
-- Enforcing rate limits on specific tool usage
-- Protecting against runaway agent loops
-</Tip>
+- Preventing excessive calls to expensive external APIs.
+- Limiting web searches or database queries.
+- Enforcing rate limits on specific tool usage.
+- Protecting against runaway agent loops.
 
 :::python
 **API reference:** @[`ToolCallLimitMiddleware`]
@@ -714,18 +643,14 @@ const agent = createAgent({
 
 </Accordion>
 
----
 
 ### Model fallback
 
-Automatically fallback to alternative models when the primary model fails.
+Automatically fallback to alternative models when the primary model fails. Model fallback is useful for the following:
 
-<Tip>
-**Perfect for:**
-- Building resilient agents that handle model outages
-- Cost optimization by falling back to cheaper models
+- Building resilient agents that handle model outages.
+- Cost optimization by falling back to cheaper models.
 - Provider redundancy across OpenAI, Anthropic, etc.
-</Tip>
 
 :::python
 **API reference:** @[`ModelFallbackMiddleware`]
@@ -838,18 +763,14 @@ const agent = createAgent({
 
 </Accordion>
 
----
 
 ### PII detection
 
-Detect and handle Personally Identifiable Information (PII) in conversations using configurable strategies.
+Detect and handle Personally Identifiable Information (PII) in conversations using configurable strategies. PII detection is useful for the following:
 
-<Tip>
-**Perfect for:**
-- Healthcare and financial applications with compliance requirements
-- Customer service agents that need to sanitize logs
-- Any application handling sensitive user data
-</Tip>
+- Healthcare and financial applications with compliance requirements.
+- Customer service agents that need to sanitize logs.
+- Any application handling sensitive user data.
 
 :::python
 **API reference:** @[`PIIMiddleware`]
@@ -1011,17 +932,13 @@ const agent = createAgent({
 
 </Accordion>
 
----
 
 ### To-do list
 
-Equip agents with task planning and tracking capabilities for complex multi-step tasks.
+Equip agents with task planning and tracking capabilities for complex multi-step tasks. To-do lists are useful for the following:
 
-<Tip>
-**Perfect for:**
-- Complex multi-step tasks requiring coordination across multiple tools
-- Long-running operations where progress visibility is important
-</Tip>
+- Complex multi-step tasks requiring coordination across multiple tools.
+- Long-running operations where progress visibility is important.
 
 <Note>
     This middleware automatically provides agents with a `write_todos` tool and system prompts to guide effective task planning.
@@ -1143,18 +1060,14 @@ console.log(result.todos);
 
 </Accordion>
 
----
 
 ### LLM tool selector
 
-Use an LLM to intelligently select relevant tools before calling the main model.
+Use an LLM to intelligently select relevant tools before calling the main model. LLM tool selectors are useful for the following:
 
-<Tip>
-**Perfect for:**
-- Agents with many tools (10+) where most aren't relevant per query
-- Reducing token usage by filtering irrelevant tools
-- Improving model focus and accuracy
-</Tip>
+- Agents with many tools (10+) where most aren't relevant per query.
+- Reducing token usage by filtering irrelevant tools.
+- Improving model focus and accuracy.
 
 :::python
 **API reference:** @[`LLMToolSelectorMiddleware`]
@@ -1282,18 +1195,14 @@ const agent = createAgent({
 
 </Accordion>
 
----
 
 ### Tool retry
 
-Automatically retry failed tool calls with configurable exponential backoff.
+Automatically retry failed tool calls with configurable exponential backoff. Tool retry is useful for the following:
 
-<Tip>
-**Perfect for:**
-- Handling transient failures in external API calls
-- Improving reliability of network-dependent tools
-- Building resilient agents that gracefully handle temporary errors
-</Tip>
+- Handling transient failures in external API calls.
+- Improving reliability of network-dependent tools.
+- Building resilient agents that gracefully handle temporary errors.
 
 :::python
 **API reference:** @[`ToolRetryMiddleware`]
@@ -1402,18 +1311,14 @@ agent = create_agent(
 
 </Accordion>
 
----
 
 ### LLM tool emulator
 
-Emulate tool execution using an LLM for testing purposes, replacing actual tool calls with AI-generated responses.
+Emulate tool execution using an LLM for testing purposes, replacing actual tool calls with AI-generated responses. LLM tool emulators are useful for the following:
 
-<Tip>
-**Perfect for:**
-- Testing agent behavior without executing real tools
-- Developing agents when external tools are unavailable or expensive
-- Prototyping agent workflows before implementing actual tools
-</Tip>
+- Testing agent behavior without executing real tools.
+- Developing agents when external tools are unavailable or expensive.
+- Prototyping agent workflows before implementing actual tools.
 
 :::python
 **API reference:** @[`LLMToolEmulator`]
@@ -1455,7 +1360,7 @@ This middleware is only available in Python. For JavaScript/TypeScript, consider
 
 The middleware uses an LLM to generate plausible responses for tool calls instead of executing the actual tools.
 
-:::python
+
 ```python
 from langchain.agents import create_agent
 from langchain.agents.middleware import LLMToolEmulator
@@ -1494,23 +1399,18 @@ agent3 = create_agent(
     middleware=[LLMToolEmulator(model="claude-sonnet-4-5-20250929")],
 )
 ```
-:::
 
 </Accordion>
 :::
 
----
 
 ### Context editing
 
-Manage conversation context by trimming, summarizing, or clearing tool uses.
+Manage conversation context by trimming, summarizing, or clearing tool uses. Context editing is useful for the following:
 
-<Tip>
-**Perfect for:**
-- Long conversations that need periodic context cleanup
-- Removing failed tool attempts from context
-- Custom context management strategies
-</Tip>
+- Long conversations that need periodic context cleanup.
+- Removing failed tool attempts from context.
+- Custom context management strategies.
 
 :::python
 **API reference:** @[`ContextEditingMiddleware`], @[`ClearToolUsesEdit`]
@@ -1691,8 +1591,6 @@ const agent = createAgent({
 
 </Accordion>
 
----
-
 ## Provider-specific middleware
 
 These middleware are optimized for specific LLM providers.
@@ -1701,25 +1599,19 @@ These middleware are optimized for specific LLM providers.
 
 Middleware specifically designed for Anthropic's Claude models.
 
-| Middleware | Use case |
-|------------|----------|
+| Middleware | Description |
+|------------|-------------|
 | [Prompt caching](#anthropic-prompt-caching) | Reduce costs by caching repetitive prompt prefixes |
-
----
 
 #### Anthropic prompt caching
 
-Reduce costs by caching repetitive prompt prefixes with Anthropic models.
-
-<Tip>
-**Perfect for:**
-- Applications with long, repeated system prompts
-- Agents that reuse the same context across invocations
-- Reducing API costs for high-volume deployments
-</Tip>
+Reduce costs by caching repetitive prompt prefixes with Anthropic models. Prompt caching is useful for the following:
+- Applications with long, repeated system prompts.
+- Agents that reuse the same context across invocations.
+- Reducing API costs for high-volume deployments.
 
 <Info>
-    Learn more about [Anthropic Prompt Caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching#cache-limitations) strategies and limitations.
+    Learn more about [Anthropic prompt caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching#cache-limitations) strategies and limitations.
 </Info>
 
 :::python
@@ -1838,7 +1730,6 @@ const result = await agent.invoke({
 
 </Accordion>
 
----
 
 ### OpenAI
 
