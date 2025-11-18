@@ -3,14 +3,47 @@ title: Evaluation Concepts
 sidebarTitle: Concepts
 ---
 
-LangSmith makes building high-quality evaluations easy. This guide explains the key concepts of the LangSmith evaluation framework. The building blocks of the LangSmith framework are:
+This page explains the key concepts of LangSmith Evaluation.
 
-* [**Datasets**:](/langsmith/evaluation-concepts#datasets) Collections of test inputs and reference outputs.
-* [**Evaluators**](/langsmith/evaluation-concepts#evaluators): Functions for scoring outputs. These can be [online evaluators](/langsmith/evaluation-concepts#online-evaluation) that run on traces in real time or [offline evaluators](/langsmith/evaluation-concepts#offline-evaluation) that run on a dataset.
+<Callout icon="split" color="#8b5cf6" iconType="solid">
+**Understand online vs offline evaluations**
+
+LangSmith supports two types of evaluations based on **what objects they run on**:
+
+- <Icon icon="flask" iconType="solid" /> [Offline evaluations](#offline-evaluation) run on _examples_ from _datasets_. Examples include reference outputs for comparison. Use offline evaluations for pre-deployment testing, benchmarking, and regression testing.
+- <Icon icon="radar" iconType="solid" /> [Online evaluations](#online-evaluation) run on _runs_ or _threads_ from [tracing](/langsmith/observability-quickstart) projects. These are real production traces without reference outputs. Use online evaluations for production monitoring and real-time performance tracking.
+
+**The key distinction:** offline evaluations have access to reference outputs (what you expect), while online evaluations only have access to actual inputs and outputs (what actually happened).
+</Callout>
+
+The building blocks of LangSmith Evaluation are:
+
+- [Datasets & examples:](#datasets) Collections of test inputs and reference outputs used for offline evaluation.
+- [Traces & runs:](#runs-for-online-evaluation) Production execution logs used for online evaluation.
+- [Evaluators](#evaluators): Functions for scoring outputs. These can be [online evaluators](#online-evaluation) that run on traces in real time or [offline evaluators](#offline-evaluation) that run on a dataset.
+
+## Core evaluation objects
+
+The core objects that evaluations run on:
+
+- [Examples](#examples) (for offline evaluation) are curated test cases used for pre-deployment testing. Because they include reference outputs, offline evaluators can compare actual vs expected results.
+- [Runs](#runs-for-online-evaluation) (for online evaluation) are real production traces. Online evaluators assess these runs in near real-time without reference outputs, focusing on detecting issues, anomalies, or quality degradation.
+
+## Runs for online evaluation
+
+A _run_ is a single execution trace from your [deployed application](/langsmith/deployments). Each run contains:
+- **Inputs**: The actual user inputs your application received.
+- **Outputs**: What your application actually returned.
+- **Intermediate steps**: All the child runs (tool calls, LLM calls, and so on).
+- **Metadata**: Tags, user feedback, latency metrics, etc.
+
+_Threads_ are collections of related runs (multi-turn conversations). Online evaluators can also run at the thread level to evaluate entire conversations.
+
+Learn more about [runs and traces in the Observability concepts](/langsmith/observability-concepts#runs).
 
 ## Datasets
 
-A dataset is a collection of examples used for evaluating an application. An example is a test input, reference output pair.
+A dataset is a _collection of examples_ used for evaluating an application. An example is a test input, reference output pair.
 
 ![Dataset](/langsmith/images/dataset-concept.png)
 
@@ -18,9 +51,9 @@ A dataset is a collection of examples used for evaluating an application. An exa
 
 Each example consists of:
 
-* **Inputs**: a dictionary of input variables to pass to your application.
-* **Reference outputs** (optional): a dictionary of reference outputs. These do not get passed to your application, they are only used in evaluators.
-* **Metadata** (optional): a dictionary of additional information that can be used to create filtered views of a dataset.
+- **Inputs**: a dictionary of input variables to pass to your application.
+- **Reference outputs** (optional): a dictionary of reference outputs. These do not get passed to your application, they are only used in evaluators.
+- **Metadata** (optional): a dictionary of additional information that can be used to create filtered views of a dataset.
 
 ![Example](/langsmith/images/example-concept.png)
 
@@ -28,184 +61,230 @@ Each example consists of:
 
 There are various ways to build datasets for evaluation, including:
 
+- [Manually curated examples](#manually-curated-examples)
+- [Historical traces](#historical-traces)
+- [Synthetic data](#synthetic-data)
+
 #### Manually curated examples
 
-This is how we typically recommend people get started creating datasets. From building your application, you probably have some idea of what types of inputs you expect your application to be able to handle, and what "good" responses may be. You probably want to cover a few different common edge cases or situations you can imagine. Even 10-20 high-quality, manually-curated examples can go a long way.
+This is the recommended starting point for creating datasets. When building an application, you'll have some idea of what types of inputs the application should handle, and what "good" responses should be. Start by covering a few different common edge cases or situations. Even 10–20 high-quality, manually curated examples can be sufficient for initial testing.
 
 #### Historical traces
 
-Once you have an application in production, you start getting valuable information: how are users actually using it? These real-world runs make for great examples because they're, well, the most realistic!
+Once an application is in production, it collects valuable information about real-world usage patterns. These production runs make excellent examples because they reflect actual user behavior.
 
-If you're getting a lot of traffic, how can you determine which runs are valuable to add to a dataset? There are a few techniques you can use:
+For high-traffic applications, several techniques help identify valuable runs to add to a dataset:
 
-* **User feedback**: If possible - try to collect end user feedback. You can then see which datapoints got negative feedback. That is super valuable! These are spots where your application did not perform well. You should add these to your dataset to test against in the future.
-* **Heuristics**: You can also use other heuristics to identify "interesting" datapoints. For example, runs that took a long time to complete could be interesting to look at and add to a dataset.
-* **LLM feedback**: You can use another LLM to detect noteworthy runs. For example, you could use an LLM to label chatbot conversations where the user had to rephrase their question or correct the model in some way, indicating the chatbot did not initially respond correctly.
+- **User feedback**: Collect end user feedback to identify datapoints that received negative feedback. These represent cases where the application did not perform well and should be added to the dataset to test against in the future.
+- **Heuristics**: Use other heuristics to identify interesting datapoints. For example, runs that took a long time to complete are worth examining and potentially adding to a dataset.
+- **LLM feedback**: Use another LLM to detect noteworthy runs. For example, an LLM can label chatbot conversations where the user had to rephrase their question or correct the model, indicating the chatbot did not initially respond correctly.
 
 #### Synthetic data
 
-Once you have a few examples, you can try to artificially generate some more. It's generally advised to have a few good hand-crafted examples before this, as this synthetic data will often resemble them in some way. This can be a useful way to get a lot of datapoints, quickly.
+_Synthetic data generation_ creates additional examples artificially from existing ones. This approach works best when starting with several high-quality, hand-crafted examples, because the synthetic data typically uses these as templates. This provides a quick way to expand dataset size.
 
 ### Splits
 
-When setting up your evaluation, you may want to partition your dataset into different splits. For example, you might use a smaller split for many rapid and cheap iterations and a larger split for your final evaluation. In addition, splits can be important for the interpretability of your experiments. For example, if you have a RAG application, you may want your dataset splits to focus on different types of questions (e.g., factual, opinion, etc) and to evaluate your application on each split separately.
+_Splits_ are partitions of a dataset that enable targeted evaluation on different subsets of examples. Splits serve two primary purposes: performance optimization (using a smaller split for rapid iterations and a larger split for final evaluation) and interpretability (evaluating different types of inputs separately). For example, a RAG application might use splits to focus on different question types (factual, opinion, etc.) and evaluate performance on each type separately.
 
 Learn how to [create and manage dataset splits](/langsmith/manage-datasets-in-application#create-and-manage-dataset-splits).
 
 ### Versions
 
-Datasets are [versioned](/langsmith/manage-datasets#version-a-dataset) such that every time you add, update, or delete examples in your dataset, a new version of the dataset is created. This makes it easy to inspect and revert changes to your dataset in case you make a mistake. You can also [tag versions](/langsmith/manage-datasets#tag-a-version) of your dataset to give them a more human-readable name. This can be useful for marking important milestones in your dataset's history.
+_Dataset versions_ track changes to datasets over time. When you add, update or delete an example, LangSmith creates a new [version](/langsmith/manage-datasets#version-a-dataset) automatically. This enables inspection and reversal of changes when needed. You can [tag](/langsmith/manage-datasets#tag-a-version) versions with human-readable names to mark important milestones in a dataset's history.
 
-You can run evaluations on specific versions of a dataset. This can be useful when running evaluations in CI, to make sure that a dataset update doesn't accidentally break your CI pipelines.
+Evaluations can target specific dataset versions. This is particularly useful in CI pipelines to ensure dataset updates do not break existing evaluation workflows.
 
 ## Evaluators
 
-Evaluators are functions that score how well your application performs on a particular example.
-
-#### Evaluator inputs
-
-Evaluators receive these inputs:
-
-* [Example](/langsmith/evaluation-concepts#examples): The example(s) from your [Dataset](/langsmith/evaluation-concepts#datasets). Contains inputs, (reference) outputs, and metadata.
-* [Run](/langsmith/observability-concepts#runs): The actual outputs and intermediate steps (child runs) from passing the example inputs to the application.
-
-#### Evaluator outputs
-
-An evaluator returns one or more metrics. These should be returned as a dictionary or list of dictionaries of the form:
-
-* `key`: The name of the metric.
-* `score` | `value`: The value of the metric. Use `score` if it's a numerical metric and `value` if it's categorical.
-* `comment` (optional): The reasoning or additional string information justifying the score.
-
-#### Defining evaluators
+_Evaluators_ are functions that score how well your application performs on a particular example.
 
 There are a number of ways to define and run evaluators:
 
-* **Custom code**: Define [custom evaluators](/langsmith/code-evaluator) as Python or TypeScript functions and run them client-side using the SDKs or server-side via the UI.
-* **Built-in evaluators**: LangSmith has a number of built-in evaluators that you can configure and run via the UI.
+- **Custom code**: Define [custom evaluators](/langsmith/code-evaluator) as Python or TypeScript functions and run them client-side using the SDKs or server-side via the UI.
+- **Built-in evaluators**: LangSmith has a number of built-in evaluators that you can configure and run via the UI.
 
-You can run evaluators using the LangSmith SDK ([Python](https://docs.smith.langchain.com/reference/python/reference) and [TypeScript](https://docs.smith.langchain.com/reference/js)), via the [Prompt Playground](/langsmith/observability-concepts#prompt-playground), or by configuring [Rules](/langsmith/rules) to automatically run them on particular tracing projects or datasets.
+You can run evaluators using the LangSmith SDK ([Python](https://docs.smith.langchain.com/reference/python/reference) and [TypeScript](https://docs.smith.langchain.com/reference/js)), via the [Prompt Playground](/langsmith/observability-concepts#prompt-playground), or by configuring [rules](/langsmith/rules) to automatically run them on particular tracing projects or datasets.
 
-#### Evaluation techniques
+Evaluators have the following components:
 
-There are a few high-level approaches to LLM evaluation:
+- [Evaluator inputs](#evaluator-inputs)
+- [Evaluator outputs](#evaluator-outputs)
+
+### Evaluator inputs
+
+Evaluator inputs differ based on evaluation type:
+
+**Offline evaluators** receive:
+- [Example](#examples): The example from your [dataset](#datasets), containing inputs, reference outputs, and metadata.
+- [Run](/langsmith/observability-concepts#runs): The actual outputs and intermediate steps from running the application on the example inputs.
+
+**Online evaluators** receive:
+- [Run](/langsmith/observability-concepts#runs): The production trace containing inputs, outputs, and intermediate steps (no reference outputs available).
+
+### Evaluator outputs
+
+Evaluators return one or more metrics as a dictionary or list of dictionaries. Each dictionary contains:
+
+- `key`: The metric name.
+- `score` | `value`: The metric value (`score` for numerical metrics, `value` for categorical metrics).
+- `comment` (optional): Additional reasoning or explanation for the score.
+
+## Evaluation techniques
+
+LangSmith supports several evaluation approaches:
+
+- [Human](#human)
+- [Heuristic](#heuristic)
+- [LLM-as-judge](#llm-as-judge)
+- [Pairwise](#pairwise)
 
 ### Human
 
-Human evaluation is [often a great starting point for evaluation](https://hamel.dev/blog/posts/evals/#looking-at-your-traces). LangSmith makes it easy to review your LLM application outputs as well as the traces (all intermediate steps).
+_Human evaluation_ involves manual review of application outputs and execution traces. This approach is [often an effective starting point for evaluation](https://hamel.dev/blog/posts/evals/#looking-at-your-traces). LangSmith provides tools to review application outputs and traces (all intermediate steps).
 
-LangSmith's [annotation queues](/langsmith/evaluation-concepts#annotation-queues) make it easy to get human feedback on your application's outputs.
+[Annotation queues](#annotation-queues) streamline the process of collecting human feedback on application outputs.
 
 ### Heuristic
 
-Heuristic evaluators are deterministic, rule-based functions. These are good for simple checks like making sure that a chatbot's response isn't empty, that a snippet of generated code can be compiled, or that a classification is exactly correct.
+_Heuristic evaluators_ are deterministic, rule-based functions. They work well for simple checks such as verifying that a chatbot's response is not empty, that generated code compiles, or that a classification matches exactly.
 
 ### LLM-as-judge
 
-LLM-as-judge evaluators use LLMs to score the application's output. To use them, you typically encode the grading rules / criteria in the LLM prompt. They can be reference-free (e.g., check if system output contains offensive content or adheres to specific criteria). Or, they can compare task output to a reference output (e.g., check if the output is factually accurate relative to the reference).
+_LLM-as-judge evaluators_ use LLMs to score application outputs. The grading rules and criteria are typically encoded in the LLM prompt. These evaluators can be:
 
-With LLM-as-judge evaluators, it is important to carefully review the resulting scores and tune the grader prompt if needed. Often it is helpful to write these as few-shot evaluators, where you provide examples of inputs, outputs, and expected grades as part of the grader prompt.
+- **Reference-free**: Check if output contains offensive content or adheres to specific criteria.
+- **Reference-based**: Compare output to a reference (e.g., check factual accuracy relative to the reference).
+
+LLM-as-judge evaluators require careful review of scores and prompt tuning. Few-shot evaluators, which include examples of inputs, outputs, and expected grades in the grader prompt, often improve performance.
 
 Learn about [how to define an LLM-as-a-judge evaluator](/langsmith/llm-as-judge).
 
 ### Pairwise
 
-Pairwise evaluators allow you to compare the outputs of two versions of an application. This can use either a heuristic ("which response is longer"), an LLM (with a specific pairwise prompt), or human (asking them to manually annotate examples).
+_Pairwise evaluators_ compare outputs from two application versions using heuristics (e.g., which response is longer), LLMs (with pairwise prompts), or human reviewers.
 
-**When should you use pairwise evaluation?**
-
-Pairwise evaluation is helpful when it is difficult to directly score an LLM output, but easier to compare two outputs. This can be the case for tasks like summarization - it may be hard to give a summary an absolute score, but easy to choose which of two summaries is more informative.
+Pairwise evaluation works well when directly scoring an output is difficult but comparing two outputs is straightforward. For example, in summarization tasks, choosing the more informative of two summaries is often easier than assigning an absolute score to a single summary.
 
 Learn [how run pairwise evaluations](/langsmith/evaluate-pairwise).
 
 ## Experiment
 
-Each time we evaluate an application on a dataset, we are conducting an experiment. An experiment contains the results of running a specific version of your application on the dataset. To understand how to use the LangSmith experiment view, see [how to analyze experiment results](/langsmith/analyze-an-experiment).
+An _experiment_ represents the results of evaluating a specific application version on a dataset. Each experiment captures outputs, evaluator scores, and execution traces for every example in the dataset.
 
 ![Experiment view](/langsmith/images/experiment-view.png)
 
-Typically, we will run multiple experiments on a given dataset, testing different configurations of our application (e.g., different prompts or LLMs). In LangSmith, you can easily view all the experiments associated with your dataset. Additionally, you can [compare multiple experiments in a comparison view](/langsmith/compare-experiment-results).
+Multiple experiments typically run on a given dataset to test different application configurations (e.g., different prompts or LLMs). LangSmith displays all experiments associated with a dataset and supports [comparing multiple experiments](/langsmith/compare-experiment-results) side-by-side.
 
 ![Comparison view](/langsmith/images/comparison-view.png)
 
+Learn [how to analyze experiment results](/langsmith/analyze-an-experiment).
 
 ## Experiment configuration
 
-LangSmith supports a number of experiment configurations which make it easier to run your evals in the manner you want.
+LangSmith supports several configuration options for experiments:
+
+- [Repetitions](#repetitions)
+- [Concurrency](#concurrency)
+- [Caching](#caching)
 
 ### Repetitions
 
-Running an experiment multiple times can be helpful since LLM outputs are not deterministic and can differ from one repetition to the next. By running multiple repetitions, you can get a more accurate estimate of the performance of your system.
+_Repetitions_ run an experiment multiple times to account for LLM output variability. Since LLM outputs are non-deterministic, multiple repetitions provide a more accurate performance estimate.
 
-Repetitions can be configured by passing the `num_repetitions` argument to `evaluate` / `aevaluate` ([Python](https://docs.smith.langchain.com/reference/python/evaluation/langsmith.evaluation._runner.evaluate), [TypeScript](https://docs.smith.langchain.com/reference/js/interfaces/evaluation.EvaluateOptions#numrepetitions)). Repeating the experiment involves both re-running the target function to generate outputs and re-running the evaluators.
+Configure repetitions by passing the `num_repetitions` argument to `evaluate` / `aevaluate` ([Python](https://docs.smith.langchain.com/reference/python/evaluation/langsmith.evaluation._runner.evaluate), [TypeScript](https://docs.smith.langchain.com/reference/js/interfaces/evaluation.EvaluateOptions#numrepetitions)). Each repetition re-runs both the target function and all evaluators.
 
-To learn more about running repetitions on experiments, read the [how-to-guide](/langsmith/repetition).
+Learn more in the [repetitions how-to guide](/langsmith/repetition).
 
 ### Concurrency
 
-By passing the `max_concurrency` argument to `evaluate` / `aevaluate`, you can specify the concurrency of your experiment. The `max_concurrency` argument has slightly different semantics depending on whether you are using `evaluate` or `aevaluate`.
+_Concurrency_ controls how many examples run simultaneously during an experiment. Configure it by passing the `max_concurrency` argument to `evaluate` / `aevaluate`. The semantics differ between the two functions:
 
 #### `evaluate`
 
-The `max_concurrency` argument to `evaluate` specifies the maximum number of concurrent threads to use when running the experiment. This is both for when running your target function as well as your evaluators.
+The `max_concurrency` argument specifies the maximum number of concurrent threads for running both the target function and evaluators.
 
 #### `aevaluate`
 
-The `max_concurrency` argument to `aevaluate` is fairly similar to `evaluate`, but instead uses a semaphore to limit the number of concurrent tasks that can run at once. `aevaluate` works by creating a task for each example in the dataset. Each task consists of running the target function as well as all of the evaluators on that specific example. The `max_concurrency` argument specifies the maximum number of concurrent tasks, or put another way - examples, to run at once.
+The `max_concurrency` argument uses a semaphore to limit concurrent tasks. `aevaluate` creates a task for each example, where each task runs the target function and all evaluators for that example. The `max_concurrency` argument specifies the maximum number of concurrent examples to process.
 
 ### Caching
 
-Lastly, you can also cache the API calls made in your experiment by setting the `LANGSMITH_TEST_CACHE` to a valid folder on your device with write access. This will cause the API calls made in your experiment to be cached to disk, meaning future experiments that make the same API calls will be greatly sped up.
+_Caching_ stores API call results to disk to speed up future experiments. Set the `LANGSMITH_TEST_CACHE` environment variable to a valid folder path with write access. Future experiments that make identical API calls will reuse cached results instead of making new requests.
 
 ## Annotation queues
 
-Human feedback is often the most valuable feedback you can gather on your application. With [annotation queues](/langsmith/annotation-queues) you can flag runs of your application for annotation. Human annotators then have a streamlined view to review and provide feedback on the runs in a queue. Often (some subset of) these annotated runs are then transferred to a [dataset](/langsmith/evaluation-concepts#datasets) for future evaluations. While you can always [annotate runs inline](/langsmith/annotate-traces-inline), annotation queues provide another option to group runs together, specify annotation criteria, and configure permissions.
+Human feedback often provides the most valuable assessment of application quality. _Annotation queues_ enable structured collection of this feedback by organizing runs for human review.
+
+[Annotation queues](/langsmith/annotation-queues) flag specific application runs for annotation. Annotators review these runs in a streamlined interface to provide feedback. Annotated runs can then be transferred to a [dataset](#datasets) for future evaluations.
+
+Annotation queues complement [inline annotation](/langsmith/annotate-traces-inline) by offering additional capabilities: grouping runs together, specifying annotation criteria, and configuring reviewer permissions.
 
 Learn more about [annotation queues and human feedback](/langsmith/annotation-queues).
 
+## Offline and online evaluation comparison
+
+The following table summarizes the key differences between offline and online evaluations:
+
+| | **Offline Evaluation** | **Online Evaluation** |
+|---|---|---|
+| **Runs on** | Dataset (Examples) | Tracing Project (Runs/Threads) |
+| **Data access** | Inputs, Outputs, Reference Outputs | Inputs, Outputs only |
+| **When to use** | Pre-deployment, during development | Production, post-deployment |
+| **Primary use cases** | Benchmarking, unit testing, regression testing, backtesting | Real-time monitoring, production feedback, anomaly detection |
+| **Evaluation timing** | Batch processing on curated test sets | Real-time or near real-time on live traffic |
+| **Setup location** | Evaluation tab (SDK, UI, Prompt Playground) | [Observability tab](/langsmith/online-evaluations) (automated rules) |
+| **Data requirements** | Requires dataset curation | No dataset needed, evaluates live traces |
+
 ## Offline evaluation
 
-Evaluating an application on a dataset is what we call "offline" evaluation. It is offline because we're evaluating on a pre-compiled set of data. An online evaluation, on the other hand, is one in which we evaluate a deployed application's outputs on real traffic, in near realtime. Offline evaluations are used for testing a version(s) of your application pre-deployment.
+_Offline evaluation_ tests applications on pre-compiled datasets before deployment. The term "offline" refers to evaluating on curated data rather than live traffic. In contrast, online evaluation assesses deployed applications on real traffic in near real-time. Offline evaluation enables pre-deployment testing and version comparison.
 
-You can run offline evaluations client-side using the LangSmith SDK ([Python](https://docs.smith.langchain.com/reference/python/reference) and [TypeScript](https://docs.smith.langchain.com/reference/js)). You can run them server-side via the [Prompt Playground](/langsmith/observability-concepts#prompt-playground) or by configuring [automations](/langsmith/rules) to run certain evaluators on every new experiment against a specific dataset.
+Offline evaluations run client-side using the LangSmith SDK ([Python](https://docs.smith.langchain.com/reference/python/reference) and [TypeScript](https://docs.smith.langchain.com/reference/js)) or server-side via the [Prompt Playground](/langsmith/observability-concepts#prompt-playground) or [automations](/langsmith/rules).
 
 ![Offline](/langsmith/images/offline.png)
 
 ### Benchmarking
 
-Perhaps the most common type of offline evaluation is one in which we curate a dataset of representative inputs, define the key performance metrics, and benchmark multiple versions of our application to find the best one. Benchmarking can be laborious because for many use cases you have to curate a dataset with gold-standard reference outputs and design good metrics for comparing experimental outputs to them. For a RAG Q\&A bot this might look like a dataset of questions and reference answers, and an LLM-as-judge evaluator that determines if the actual answer is semantically equivalent to the reference answer. For a ReACT agent this might look like a dataset of user requests and a reference set of all the tool calls the model is supposed to make, and a heuristic evaluator that checks if all of the reference tool calls were made.
+_Benchmarking_ compares multiple application versions on a curated dataset to identify the best performer. This process involves creating a dataset of representative inputs, defining performance metrics, and testing each version.
+
+Benchmarking requires dataset curation with gold-standard reference outputs and well-designed comparison metrics. Examples:
+- **RAG Q&A bot**: Dataset of questions and reference answers, with an LLM-as-judge evaluator checking semantic equivalence between actual and reference answers
+- **ReACT agent**: Dataset of user requests and reference tool calls, with a heuristic evaluator verifying all expected tool calls were made
 
 ### Unit tests
 
-Unit tests are used in software development to verify the correctness of individual system components. [Unit tests in the context of LLMs are often rule-based assertions](https://hamel.dev/blog/posts/evals/#level-1-unit-tests) on LLM inputs or outputs (e.g., checking that LLM-generated code can be compiled, JSON can be loaded, etc.) that validate basic functionality.
+_Unit tests_ verify the correctness of individual system components. In LLM contexts, [unit tests are often rule-based assertions](https://hamel.dev/blog/posts/evals/#level-1-unit-tests) on inputs or outputs (e.g., verifying LLM-generated code compiles, JSON loads successfully) that validate basic functionality.
 
-Unit tests are often written with the expectation that they should always pass. These types of tests are nice to run as part of CI. Note that when doing so it is useful to set up a cache to minimize LLM calls (because those can quickly rack up!).
+Unit tests typically expect consistent passing results, making them suitable for CI pipelines. When running in CI, configure caching to minimize LLM API calls and associated costs.
 
 ### Regression tests
 
-Regression tests are used to measure performance across versions of your application over time. They are used to, at the very least, ensure that a new app version does not regress on examples that your current version correctly handles, and ideally to measure how much better your new version is relative to the current. Often these are triggered when you are making app updates (e.g. updating models or architectures) that are expected to influence the user experience.
+_Regression tests_ measure performance consistency across application versions over time. They ensure new versions do not degrade performance on cases the current version handles correctly, and ideally demonstrate improvements over the baseline. These tests typically run when making updates expected to affect user experience (e.g., model or architecture changes).
 
-LangSmith's comparison view has native support for regression testing, allowing you to quickly see examples that have changed relative to the baseline. Regressions are highlighted red, improvements green.
+LangSmith's comparison view highlights regressions (red) and improvements (green) relative to the baseline, enabling quick identification of changes.
 
 ![Comparison view](/langsmith/images/comparison-view.png)
 
 ### Backtesting
 
-Backtesting is an approach that combines dataset creation (discussed above) with evaluation. If you have a collection of production logs, you can turn them into a dataset. Then, you can re-run those production examples with newer application versions. This allows you to assess performance on past and realistic user inputs.
+_Backtesting_ evaluates new application versions against historical production data. Production logs are converted into a dataset, then newer versions process these examples to assess performance on past, realistic user inputs.
 
-This is commonly used to evaluate new model versions. Anthropic dropped a new model? No problem! Grab the 1000 most recent runs through your application and pass them through the new model. Then compare those results to what actually happened in production.
+This approach is commonly used for evaluating new model releases. For example, when a new model becomes available, test it on the most recent production runs and compare results to actual production outcomes.
 
 ### Pairwise evaluation
 
-For some tasks [it is easier](https://www.oreilly.com/radar/what-we-learned-from-a-year-of-building-with-llms-part-i/) for a human or LLM grader to determine if "version A is better than B" than to assign an absolute score to either A or B. Pairwise evaluations are just this — a scoring of the outputs of two versions against each other as opposed to against some reference output or absolute criteria. Pairwise evaluations are often useful when using LLM-as-judge evaluators on more general tasks. For example, if you have a summarizer application, it may be easier for an LLM-as-judge to determine "Which of these two summaries is more clear and concise?" than to give an absolute score like "Give this summary a score of 1-10 in terms of clarity and concision."
+_Pairwise evaluation_ compares outputs from two versions by determining relative quality rather than assigning absolute scores. For some tasks, [determining "version A is better than B"](https://www.oreilly.com/radar/what-we-learned-from-a-year-of-building-with-llms-part-i/) is easier than scoring each version independently.
+
+This approach proves particularly useful for LLM-as-judge evaluations on subjective tasks. For example, in summarization, determining "Which summary is clearer and more concise?" is often simpler than assigning numeric clarity scores.
 
 Learn [how run pairwise evaluations](/langsmith/evaluate-pairwise).
 
 ## Online evaluation
 
-Evaluating a deployed application's outputs in (roughly) realtime is what we call "online" evaluation. In this case there is no dataset involved and no possibility of reference outputs — we're running evaluators on real inputs and real outputs as they're produced. This is useful for monitoring your application and flagging unintended behavior. Online evaluation can also work hand-in-hand with offline evaluation: for example, an online evaluator can be used to classify input questions into a set of categories that can later be used to curate a dataset for offline evaluation.
+_Online evaluation_ assesses deployed application outputs in near real-time on production traffic. No dataset or reference outputs are involved—evaluators process actual inputs and outputs as the application produces them. This enables production monitoring and detection of unintended behavior. Online evaluation complements offline evaluation: an online evaluator can classify input questions into categories that later inform dataset curation for offline evaluation.
 
-Online evaluators are generally intended to be run server-side. LangSmith has built-in [LLM-as-judge evaluators](/langsmith/llm-as-judge) that you can configure, or you can define custom code evaluators that are also run within LangSmith.
+Online evaluators typically run server-side. LangSmith provides built-in [LLM-as-judge evaluators](/langsmith/llm-as-judge) for configuration, and supports custom code evaluators that run within LangSmith.
 
 ![Online](/langsmith/images/online.png)
 
@@ -213,28 +292,15 @@ Online evaluators are generally intended to be run server-side. LangSmith has bu
 
 ### Evaluations vs testing
 
-Testing and evaluation are very similar and overlapping concepts that often get confused.
+Testing and evaluation are similar and overlapping concepts that are frequently conflated.
 
-**An evaluation measures performance according to a metric(s).** Evaluation metrics can be fuzzy or subjective, and are more useful in relative terms than absolute ones. That is, they're often used to compare two systems against each other rather than to assert something about an individual system.
+**Evaluation measures performance according to metrics.** Evaluation metrics can be fuzzy or subjective, and prove more useful in relative terms than absolute ones. They typically compare two systems against each other rather than assert properties about an individual system.
 
 **Testing asserts correctness.** A system can only be deployed if it passes all tests.
 
-Evaluation metrics can be *turned into* tests. For example, you can write regression tests to assert that any new version of a system must outperform some baseline version of the system on the relevant evaluation metrics.
+Evaluation metrics can be converted into tests. For example, regression tests can assert that any new system version must outperform a baseline version on relevant evaluation metrics.
 
-It can also be more resource efficient to run tests and evaluations together if your system is expensive to run and you have overlapping datasets for your tests and evaluations.
+Running tests and evaluations together can be more resource efficient when a system is expensive to run and has overlapping datasets for tests and evaluations.
 
-You can also choose to write evaluations using standard software testing tools like `pytest` or `vitest/jest` out of convenience.
-
-### Using `pytest` and `Vitest/Jest`
-
-The LangSmith SDKs come with integrations for [pytest](/langsmith/pytest) and [`Vitest/Jest`](/langsmith/vitest-jest). These make it easy to:
-
-* Track test results in LangSmith
-* Write evaluations as tests
-
-Tracking test results in LangSmith makes it easy to share results, compare systems, and debug failing tests.
-
-Writing evaluations as tests can be useful when each example you want to evaluate on requires custom logic for running the application and/or evaluators. The standard evaluation flows assume that you can run your application and evaluators in the same way on every example in a dataset. But for more complex systems or comprehensive evals, you may want to evaluate specific subsets of your system with specific types of inputs and metrics. These types of heterogenous evals are much easier to write as a suite of distinct test cases that all get tracked together rather than using the standard evaluate flow.
-
-Using testing tools is also helpful when you want to *both* evaluate your system's outputs *and* assert some basic things about them.
+Evaluations can also be written using standard software testing tools like [pytest](/langsmith/pytest) or [Vitest/Jest](/langsmith/vitest-jest) for convenience.
 
