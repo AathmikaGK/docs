@@ -1,0 +1,195 @@
+---
+title: LangSmith Evaluation
+sidebarTitle: Overview
+mode: wide
+---
+
+import HostingSetup from '/snippets/langsmith/platform-setup-note.mdx';
+
+LangSmith supports two types of evaluations based on when and where they run:
+
+<CardGroup cols={2}>
+  <Card
+    title="Offline Evaluation"
+    icon="flask"
+    href="/langsmith/evaluate-llm-application"
+  >
+    **Test before you ship**
+
+    Run evaluations on curated datasets during development to compare versions, benchmark performance, and catch regressions.
+  </Card>
+
+  <Card
+    title="Online Evaluation"
+    icon="radar"
+    href="/langsmith/online-evaluations"
+  >
+    **Monitor in production**
+
+    Evaluate real user interactions in real-time to detect issues and measure quality on live traffic.
+  </Card>
+</CardGroup>
+
+
+## Evaluation workflow
+
+<Tabs>
+<Tab title="Offline evaluation flow">
+
+<Steps>
+  <Step title="Create a dataset">
+    Build a collection of test cases called a [dataset](/langsmith/manage-datasets). Each dataset contains <Tooltip tip="Individual test cases with inputs and reference outputs">[examples](/langsmith/evaluation-concepts#examples)</Tooltip>.
+
+    You can create datasets from:
+    - Manually curated examples
+    - Historical production traces
+    - Synthetic data generation
+
+    Organize with [splits](/langsmith/evaluation-concepts#splits) for different test scenarios and track changes with [versions](/langsmith/evaluation-concepts#versions).
+  </Step>
+
+  <Step title="Define evaluators">
+    Create <Tooltip tip="Functions that score how well your application performs">[evaluators](/langsmith/evaluation-concepts#evaluators)</Tooltip> that score your application's performance. Choose from:
+    - <Tooltip tip="Manual review of application outputs and execution traces">[Human](/langsmith/evaluation-concepts#human)</Tooltip> review
+    - <Tooltip tip="Deterministic, rule-based functions for simple checks">[Heuristic](/langsmith/evaluation-concepts#heuristic)</Tooltip> rules
+    - <Tooltip tip="Use LLMs to score application outputs based on grading criteria">[LLM-as-judge](/langsmith/llm-as-judge)</Tooltip> for nuanced quality assessment
+    - <Tooltip tip="Compare outputs from two application versions using relative quality judgments">[Pairwise](/langsmith/evaluate-pairwise)</Tooltip> comparison between versions
+
+    Evaluators receive both your application's output and the reference output from the dataset example.
+  </Step>
+
+  <Step title="Run an experiment">
+    Execute your application on the dataset to create an <Tooltip tip="Results of evaluating a specific application version on a dataset">[experiment](/langsmith/evaluation-concepts#experiment)</Tooltip>. Each experiment:
+    - Runs your application on every example in the dataset.
+    - Applies your evaluators to score the outputs.
+    - Captures all results for analysis.
+
+    Configure [repetitions, concurrency, and caching](/langsmith/evaluation-concepts#experiment-configuration) to optimize your evaluation runs.
+  </Step>
+
+  <Step title="Analyze results">
+    Compare experiments to find the best version. Use offline evaluation for:
+    - <Tooltip tip="Compare multiple application versions on a dataset to identify the best performer">[Benchmarking](/langsmith/evaluation-concepts#benchmarking)</Tooltip>
+    - <Tooltip tip="Verify the correctness of individual system components">[Unit tests](/langsmith/evaluation-concepts#unit-tests)</Tooltip>
+    - <Tooltip tip="Measure performance consistency across application versions over time">[Regression tests](/langsmith/evaluation-concepts#regression-tests)</Tooltip>
+    - <Tooltip tip="Evaluate new application versions against historical production data">[Backtesting](/langsmith/evaluation-concepts#backtesting)</Tooltip>
+  </Step>
+</Steps>
+
+</Tab>
+
+<Tab title="Online evaluation flow">
+
+<Steps>
+  <Step title="Deploy your application">
+    Your application is running in production, handling real user traffic. Each interaction creates a <Tooltip tip="A single execution trace including inputs, outputs, and intermediate steps">[run](/langsmith/evaluation-concepts#runs-for-online-evaluation)</Tooltip>.
+
+    Unlike offline evaluation, there are no reference outputs; you're evaluating real production behavior.
+  </Step>
+
+  <Step title="Configure online evaluators">
+    Set up [evaluators](/langsmith/online-evaluations) to run automatically on production traces:
+    - <Tooltip tip="Check for harmful content, PII, or policy violations">Safety checks</Tooltip>
+    - <Tooltip tip="Verify output structure and required fields">Format validation</Tooltip>
+    - <Tooltip tip="Rule-based checks on measurable properties">Quality heuristics</Tooltip>
+    - <Tooltip tip="LLM-based quality assessment without reference outputs">Reference-free LLM-as-judge</Tooltip>
+
+    Apply [filters and sampling rates](/langsmith/online-evaluations#4-optional-configure-a-sampling-rate) to control costs.
+  </Step>
+
+  <Step title="Monitor in real-time">
+    Online evaluators run automatically on live traffic, providing:
+    - Real-time quality monitoring
+    - Anomaly detection
+    - Production feedback for each run
+    - Alerting on critical issues
+
+    Evaluators can run on individual [runs](/langsmith/evaluation-concepts#runs-for-online-evaluation) or entire <Tooltip tip="Collections of related runs forming multi-turn conversations">[threads](/langsmith/online-evaluations#configure-multi-turn-online-evaluators)</Tooltip>.
+  </Step>
+
+  <Step title="Close the feedback loop">
+    Use insights from online evaluations to improve offline testing:
+    - Add failing production traces to your [dataset](/langsmith/manage-datasets).
+    - Create targeted evaluators for discovered issues.
+    - Run offline experiments to validate fixes.
+    - Deploy and monitor improvements with online evaluations.
+  </Step>
+</Steps>
+
+</Tab>
+</Tabs>
+
+<Tip>
+For more on the differences between offline and online evaluation, refer to the [Evaluation concepts](/langsmith/evaluation-concepts#offline-vs-online-evaluation-quick-comparison) page.
+</Tip>
+
+## Get started
+
+<Columns cols={3}>
+
+  <Card
+    title="Evaluation quickstart"
+    icon="rocket"
+    href="/langsmith/evaluation-quickstart"
+    arrow="true"
+  >
+    Get started with offline evaluation.
+  </Card>
+
+  <Card
+    title="Manage datasets"
+    icon="database"
+    href="/langsmith/manage-datasets"
+    arrow="true"
+  >
+    Create and manage datasets for evaluation through the UI or SDK.
+  </Card>
+
+  <Card
+    title="Run offline evaluations"
+    icon="microscope"
+    href="/langsmith/evaluate-llm-application"
+    arrow="true"
+  >
+    Explore evaluation types, techniques, and frameworks for comprehensive testing.
+  </Card>
+
+  <Card
+    title="Analyze results"
+    icon="chart-bar"
+    href="/langsmith/analyze-an-experiment"
+    arrow="true"
+  >
+    View and analyze evaluation results, compare experiments, filter data, and export findings.
+  </Card>
+
+  <Card
+    title="Run online evaluations"
+    icon="radar"
+    href="/langsmith/online-evaluations"
+    arrow="true"
+  >
+    Monitor production quality in real-time from the Observability tab.
+  </Card>
+
+  <Card
+    title="Follow tutorials"
+    icon="book"
+    href="/langsmith/evaluate-chatbot-tutorial"
+    arrow="true"
+  >
+    Learn by following step-by-step tutorials, from simple chatbots to complex agent evaluations.
+  </Card>
+
+</Columns>
+
+<HostingSetup/>
+
+---
+
+<Callout icon="pen-to-square" iconType="regular">
+    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/langsmith/evaluation.mdx)
+</Callout>
+<Tip icon="terminal" iconType="regular">
+    [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Tip>
