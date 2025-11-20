@@ -36,41 +36,23 @@ LangSmith supports two types of evaluations based on when and where they run:
 
 <Steps>
   <Step title="Create a dataset">
-    Build a collection of test cases called a [dataset](/langsmith/manage-datasets). Each dataset contains <Tooltip tip="Individual test cases with inputs and reference outputs">[examples](/langsmith/evaluation-concepts#examples)</Tooltip>.
-
-    You can create datasets from:
-    - Manually curated examples
-    - Historical production traces
-    - Synthetic data generation
-
-    Organize with [splits](/langsmith/evaluation-concepts#splits) for different test scenarios and track changes with [versions](/langsmith/evaluation-concepts#versions).
+    Create a [dataset](/langsmith/manage-datasets) with <Tooltip tip="Individual test cases with inputs and reference outputs">[examples](/langsmith/evaluation-concepts#examples)</Tooltip> from manually curated test cases, historical production traces, or synthetic data generation.
   </Step>
 
   <Step title="Define evaluators">
-    Create <Tooltip tip="Functions that score how well your application performs">[evaluators](/langsmith/evaluation-concepts#evaluators)</Tooltip> that score your application's performance. Choose from:
-    - <Tooltip tip="Manual review of application outputs and execution traces">[Human](/langsmith/evaluation-concepts#human)</Tooltip> review
-    - <Tooltip tip="Deterministic, rule-based functions for simple checks">[Heuristic](/langsmith/evaluation-concepts#heuristic)</Tooltip> rules
-    - <Tooltip tip="Use LLMs to score application outputs based on grading criteria">[LLM-as-judge](/langsmith/llm-as-judge)</Tooltip> for nuanced quality assessment
-    - <Tooltip tip="Compare outputs from two application versions using relative quality judgments">[Pairwise](/langsmith/evaluate-pairwise)</Tooltip> comparison between versions
-
-    Evaluators receive both your application's output and the reference output from the dataset example.
+    Create <Tooltip tip="Functions that score how well your application performs">[evaluators](/langsmith/evaluation-concepts#evaluators)</Tooltip> to score performance:
+    - [Human](/langsmith/evaluation-concepts#human) review
+    - [Heuristic](/langsmith/evaluation-concepts#heuristic) rules
+    - [LLM-as-judge](/langsmith/llm-as-judge)
+    - [Pairwise](/langsmith/evaluate-pairwise) comparison
   </Step>
 
   <Step title="Run an experiment">
-    Execute your application on the dataset to create an <Tooltip tip="Results of evaluating a specific application version on a dataset">[experiment](/langsmith/evaluation-concepts#experiment)</Tooltip>. Each experiment:
-    - Runs your application on every example in the dataset.
-    - Applies your evaluators to score the outputs.
-    - Captures all results for analysis.
-
-    Configure [repetitions, concurrency, and caching](/langsmith/evaluation-concepts#experiment-configuration) to optimize your evaluation runs.
+    Execute your application on the dataset to create an <Tooltip tip="Results of evaluating a specific application version on a dataset">[experiment](/langsmith/evaluation-concepts#experiment)</Tooltip>. Configure [repetitions, concurrency, and caching](/langsmith/evaluation-concepts#experiment-configuration) to optimize runs.
   </Step>
 
   <Step title="Analyze results">
-    Compare experiments to find the best version. Use offline evaluation for:
-    - <Tooltip tip="Compare multiple application versions on a dataset to identify the best performer">[Benchmarking](/langsmith/evaluation-concepts#benchmarking)</Tooltip>
-    - <Tooltip tip="Verify the correctness of individual system components">[Unit tests](/langsmith/evaluation-concepts#unit-tests)</Tooltip>
-    - <Tooltip tip="Measure performance consistency across application versions over time">[Regression tests](/langsmith/evaluation-concepts#regression-tests)</Tooltip>
-    - <Tooltip tip="Evaluate new application versions against historical production data">[Backtesting](/langsmith/evaluation-concepts#backtesting)</Tooltip>
+    Compare experiments for [benchmarking](/langsmith/evaluation-concepts#benchmarking), [unit tests](/langsmith/evaluation-concepts#unit-tests), [regression tests](/langsmith/evaluation-concepts#regression-tests), or [backtesting](/langsmith/evaluation-concepts#backtesting).
   </Step>
 </Steps>
 
@@ -80,37 +62,19 @@ LangSmith supports two types of evaluations based on when and where they run:
 
 <Steps>
   <Step title="Deploy your application">
-    Your application is running in production, handling real user traffic. Each interaction creates a <Tooltip tip="A single execution trace including inputs, outputs, and intermediate steps">[run](/langsmith/evaluation-concepts#runs-for-online-evaluation)</Tooltip>.
-
-    Unlike offline evaluation, there are no reference outputs; you're evaluating real production behavior.
+    Each interaction creates a <Tooltip tip="A single execution trace including inputs, outputs, and intermediate steps">[run](/langsmith/evaluation-concepts#runs-for-online-evaluation)</Tooltip> without reference outputs.
   </Step>
 
   <Step title="Configure online evaluators">
-    Set up [evaluators](/langsmith/online-evaluations) to run automatically on production traces:
-    - <Tooltip tip="Check for harmful content, PII, or policy violations">Safety checks</Tooltip>
-    - <Tooltip tip="Verify output structure and required fields">Format validation</Tooltip>
-    - <Tooltip tip="Rule-based checks on measurable properties">Quality heuristics</Tooltip>
-    - <Tooltip tip="LLM-based quality assessment without reference outputs">Reference-free LLM-as-judge</Tooltip>
-
-    Apply [filters and sampling rates](/langsmith/online-evaluations#4-optional-configure-a-sampling-rate) to control costs.
+    Set up [evaluators](/langsmith/online-evaluations) to run automatically on production traces: safety checks, format validation, quality heuristics, and reference-free LLM-as-judge. Apply [filters and sampling rates](/langsmith/online-evaluations#4-optional-configure-a-sampling-rate) to control costs.
   </Step>
 
   <Step title="Monitor in real-time">
-    Online evaluators run automatically on live traffic, providing:
-    - Real-time quality monitoring
-    - Anomaly detection
-    - Production feedback for each run
-    - Alerting on critical issues
-
-    Evaluators can run on individual [runs](/langsmith/evaluation-concepts#runs-for-online-evaluation) or entire <Tooltip tip="Collections of related runs forming multi-turn conversations">[threads](/langsmith/online-evaluations#configure-multi-turn-online-evaluators)</Tooltip>.
+    Evaluators run automatically on [runs](/langsmith/evaluation-concepts#runs-for-online-evaluation) or <Tooltip tip="Collections of related runs forming multi-turn conversations">[threads](/langsmith/online-evaluations#configure-multi-turn-online-evaluators)</Tooltip>, providing real-time monitoring, anomaly detection, and alerting.
   </Step>
 
   <Step title="Establish a feedback loop">
-    Use insights from online evaluations to improve offline testing:
-    - Add failing production traces to your [dataset](/langsmith/manage-datasets).
-    - Create targeted evaluators for discovered issues.
-    - Run offline experiments to validate fixes.
-    - Deploy and monitor improvements with online evaluations.
+    Add failing production traces to your [dataset](/langsmith/manage-datasets), create targeted evaluators, validate fixes with offline experiments, and redeploy.
   </Step>
 </Steps>
 
