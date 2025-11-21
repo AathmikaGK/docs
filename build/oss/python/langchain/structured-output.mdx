@@ -166,7 +166,7 @@ LangChain automatically uses `ProviderStrategy` when you pass a schema type dire
 Provider-native structured output provides high reliability and strict validation because the model provider enforces the schema. Use it when available.
 
 <Note>
-    If the provider natively supports structured output for your model choice, it is functionally equivalent to write `response_format=ProductReview` instead of `response_format=ToolStrategy(ProductReview)`. In either case, if structured output is not supported, the agent will fall back to a tool calling strategy.
+    If the provider natively supports structured output for your model choice, it is functionally equivalent to write `response_format=ProductReview` instead of `response_format=ProviderStrategy(ProductReview)`. In either case, if structured output is not supported, the agent will fall back to a tool calling strategy.
 </Note>
 
 

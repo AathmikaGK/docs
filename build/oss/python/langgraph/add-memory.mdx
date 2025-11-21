@@ -247,13 +247,13 @@ with PostgresSaver.from_conn_string(DB_URI) as checkpointer:  # [!code highlight
     </Tabs>
 </Accordion>
 
-<Accordion title="Example: using [Redis](https://pypi.org/project/langgraph-checkpoint-redis/) checkpointer">
+<Accordion title="Example: using Redis checkpointer">
   ```
   pip install -U langgraph langgraph-checkpoint-redis
   ```
 
     <Tip>
-    You need to call `checkpointer.setup()` the first time you're using Redis checkpointer
+    You need to call `checkpointer.setup()` the first time you're using Redis checkpointer.
     </Tip>
 
     <Tabs>
@@ -601,13 +601,14 @@ with PostgresStore.from_conn_string(DB_URI) as store:  # [!code highlight]
 
 </Accordion>
 
-<Accordion title="Example: using [Redis](https://pypi.org/project/langgraph-checkpoint-redis/) store">
+<Accordion title="Example: using Redis store">
+
   ```
   pip install -U langgraph langgraph-checkpoint-redis
   ```
 
     <Tip>
-    You need to call `store.setup()` the first time you're using Redis store
+    You need to call `store.setup()` the first time you're using [Redis store](https://pypi.org/project/langgraph-checkpoint-redis/).
     </Tip>
 
     <Tabs>
