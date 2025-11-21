@@ -18,11 +18,21 @@ uv add langchain
 
 ## Model profiles
 
-Model profiles allow you to configure how agents interact with specific models by defining capabilities, context handling, and structured output behavior.
+Chat models now expose supported features and capabilities through a `.profile` attribute. These data are derived from the [models.dev](https://github.com/sst/models.dev) project, an open source initiative that provides model capability data, and are augmented with additional fields for purposes of use with LangChain.
+
+See details in the [models](/oss/langchain/models#model-profiles) guide.
 
 ### Summarization middleware
 
+The Summarization middleware interface has been updated to support more flexible specification of trigger points for summarization, as well as what context is summarized. These values can vary with model-specific context windows using the model's [profile](/oss/langchain/models#model-profiles).
+
+See details in the [built-in middleware](/oss/langchain/middleware/built-in#summarization) guide.
+
 ### Structured output for agents
+
+Support for [ProviderStrategy](/oss/langchain/structured-output#provider-strategy) can now be inferred from a model's [profile](/oss/langchain/models#model-profiles).
+
+See details in the [structured output](/oss/langchain/structured-output) guide.
 
 ## Model retry middleware
 
