@@ -550,6 +550,10 @@ const result = await agent.invoke(
   { context: { userRole: "expert" } }
 );
 ```
+
+<Note>
+The returned system prompt from `dynamicSystemPromptMiddleware` is additive to the system prompt set in the @[`systemPrompt`] key of @[`createAgent`] configuration, as well as any system prompts contributed by other middleware.
+</Note>
 :::
 
 <Tip>
