@@ -46,7 +46,7 @@ response = model.invoke("Why do parrots talk?")
 See @[`init_chat_model`][init_chat_model] for more detail, including information on how to pass model [parameters](#parameters).
 :::
 :::js
-The easiest way to get started with a standalone model in LangChain is to use `initChatModel` to initialize one from a [provider](/oss/integrations/providers/overview) of your choice (examples below):
+The easiest way to get started with a standalone model in LangChain is to use `initChatModel` to initialize one from a [chat model provider](/oss/integrations/chat) of your choice (examples below):
 
 <ChatModelTabsJS />
 ```typescript
@@ -68,9 +68,16 @@ See @[`initChatModel`][initChatModel] for more detail, including information on 
     Send multiple requests to a model in a batch for more efficient processing.
 </Card>
 
+:::python
 <Info>
-    In addition to chat models, LangChain provides support for other adjacent technologies, such as embedding models and vector stores. See the [integrations page](/oss/integrations/providers/overview) for details.
+    In addition to chat models, LangChain provides support for other adjacent technologies, such as embedding models and vector stores. See the [integrations page](/oss/python/integrations/providers/overview) for details.
 </Info>
+:::
+:::js
+<Info>
+    In addition to chat models, LangChain provides support for other adjacent technologies, such as embedding models and vector stores. See the [integrations page](/oss/javascript/integrations/providers/overview) for details.
+</Info>
+:::
 
 ## Parameters
 
