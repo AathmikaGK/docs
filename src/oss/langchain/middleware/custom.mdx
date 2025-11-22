@@ -1054,18 +1054,18 @@ class CachedContextMiddleware(AgentMiddleware):
 ```typescript
 import { createMiddleware, SystemMessage, createAgent } from "langchain";
 
-// Middleware 1: Uses systemPrompt (string)
+// Middleware 1: Uses systemMessage with simple concatenation
 const myMiddleware = createMiddleware({
   name: "MyMiddleware",
   wrapModelCall: async (request, handler) => {
     return handler({
       ...request,
-      systemPrompt: request.systemMessage.concat(`\nAdditional context.`),
+      systemMessage: request.systemMessage.concat(`\nAdditional context.`),
     });
   },
 });
 
-// Middleware 2: Uses systemMessage (preserves structure)
+// Middleware 2: Uses systemMessage with structured content (preserves structure)
 const myOtherMiddleware = createMiddleware({
   name: "MyOtherMiddleware",
   wrapModelCall: async (request, handler) => {
