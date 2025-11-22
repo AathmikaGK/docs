@@ -3,17 +3,22 @@
 # GitHub organization.
 #
 # Setup Requirements:
-# 1. Create a GitHub App with the following permissions:
-#    - Repository permissions: Issues (write), Pull requests (write)
-#    - Organization permissions: Members (read)
-# 2. Install the GitHub App on the organization and repositories
-# 3. Add the GitHub App's private key as ORG_MEMBERSHIP_TOKEN repository secret
+# Option 1: GitHub App (Recommended - no user dependency)
+# 1. Create a GitHub App with permissions:
+#    - Repository: Issues (write), Pull requests (write)
+#    - Organization: Members (read)
+# 2. Install the app on your organization
+# 3. Add these secrets:
+#    - ORG_MEMBERSHIP_APP_ID: Your app's ID
+#    - ORG_MEMBERSHIP_APP_PRIVATE_KEY: Your app's private key
 #
-# Alternatively, use a Personal Access Token (classic) with:
-# - repo scope (for issues/PRs)
-# - read:org scope (for organization membership)
+# Option 2: Personal Access Token (simpler but user-dependent)
+# 1. Create a Personal Access Token (classic) with:
+#    - repo scope (for issues/PRs access)
+#    - read:org scope (for organization membership checks)
+# 2. Add the PAT as ORG_MEMBERSHIP_TOKEN repository secret
 #
-# The workflow will fall back to GITHUB_TOKEN if ORG_MEMBERSHIP_TOKEN is not set,
+# The workflow will fall back to GITHUB_TOKEN if no secrets are set,
 # but this will only show public organization memberships.
 
 name: Tag External Contributions
@@ -30,15 +35,22 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      contents: read
 
     steps:
+      - name: Generate GitHub App token
+        if: ${{ secrets.ORG_MEMBERSHIP_APP_ID && secrets.ORG_MEMBERSHIP_APP_PRIVATE_KEY }}
+        id: app-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.ORG_MEMBERSHIP_APP_ID }}
+          private_key: ${{ secrets.ORG_MEMBERSHIP_APP_PRIVATE_KEY }}
+
       - name: Check if contributor is external
         id: check-membership
         uses: actions/github-script@v7
         with:
-          # Use a GitHub App token or PAT with org:read permissions to check private membership
-          github-token: ${{ secrets.ORG_MEMBERSHIP_TOKEN || secrets.GITHUB_TOKEN }}
+          # Use GitHub App token, PAT, or fallback to GITHUB_TOKEN
+          github-token: ${{ steps.app-token.outputs.token || secrets.ORG_MEMBERSHIP_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
             const author = context.payload.sender.login;
