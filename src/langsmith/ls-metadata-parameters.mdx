@@ -65,7 +65,6 @@ For more comprehensive tracking, you can include additional configuration parame
     metadata={
         "ls_provider": "openai",
         "ls_model_name": "gpt-4o",
-        "ls_model_type": "chat",
         "ls_temperature": 0.7,
         "ls_max_tokens": 4096,
         "ls_stop": ["END"],
@@ -89,7 +88,6 @@ const myConfiguredLlm = traceable(
     metadata: {
       ls_provider: "openai",
       ls_model_name: "gpt-4o",
-      ls_model_type: "chat",
       ls_temperature: 0.7,
       ls_max_tokens: 4096,
       ls_stop: ["END"],
@@ -114,7 +112,6 @@ With this setup, you can later filter traces by temperature, compare runs with d
 |-----------|------|----------|-------------|
 | [`ls_provider`](#ls-provider) | `string` | Yes* | LLM provider name for cost tracking |
 | [`ls_model_name`](#ls-model-name) | `string` | Yes* | Model identifier for cost tracking |
-| [`ls_model_type`](#ls-model-type) | `"chat"` | No | Type of model (chat completion) |
 | [`ls_temperature`](#ls-temperature) | `number` | No | Temperature parameter used |
 | [`ls_max_tokens`](#ls-max-tokens) | `number` | No | Maximum tokens parameter used |
 | [`ls_stop`](#ls-stop) | `string[]` | No | Stop sequences used |
@@ -210,37 +207,6 @@ def my_claude_call(messages: list):
 **Relationships:**
 - **Requires** [`ls_provider`](#ls-provider) for cost tracking to work.
 - Works with token usage data to calculate costs.
-
-### `ls_model_type`
-
-<Note>
-**Deprecation notice**: Values other than `"chat"` are deprecated for the `ls_model_type` parameter.
-</Note>
-
-- **Type:** `"chat" | "text"` (deprecated)
-- **Required:** No
-
-**What it does:**
-Categorizes whether the model is chat-based or text completion. Used for UI display and analytics.
-
-**Values:**
-- `"chat"`: Chat-based models (most common)
-- `"text"`: Text completion models (deprecated)
-
-**When to use:**
-When you want proper categorization in the [LangSmith UI](https://smith.langchain.com).
-
-**Example:**
-```python
-metadata={
-    "ls_provider": "openai",
-    "ls_model_name": "gpt-4o",
-    "ls_model_type": "chat"
-}
-```
-
-**Relationships:**
-- Independent: works with or without other parameters
 
 ### `ls_temperature`
 
@@ -453,7 +419,7 @@ If [`ls_model_name`](#ls-model-name) is not in metadata, the system checks [`ls_
 
 These parameters help you track model settings but don't affect LangSmith's core functionality:
 
-**Optional, work independently:** [`ls_model_type`](#ls-model-type), [`ls_temperature`](#ls-temperature), [`ls_max_tokens`](#ls-max-tokens), [`ls_stop`](#ls-stop)
+**Optional, work independently:** [`ls_temperature`](#ls-temperature), [`ls_max_tokens`](#ls-max-tokens), [`ls_stop`](#ls-stop)
 - These are for tracking/display.
 - Do not affect LangSmith behavior or cost calculation.
 - Useful for experiment comparison and debugging.
