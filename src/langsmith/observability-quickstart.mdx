@@ -311,30 +311,30 @@ You can also use the `traceable` decorator for [Python](https://docs.smith.langc
     import { wrapOpenAI, traceable } from "langsmith/wrappers";
 
     function retriever(query: string): string[] {
-    return ["Harrison worked at Kensho"];
+        return ["Harrison worked at Kensho"];
     }
 
     const client = wrapOpenAI(new OpenAI()); // keep this to capture the prompt and response from the LLM
 
     const rag = traceable(async (question: string) => {
-    const docs = retriever(question);
-    const systemMessage =
-        "Answer the user's question using only the provided information below:\n" +
-        docs.join("\n");
+        const docs = retriever(question);
+        const systemMessage =
+            "Answer the user's question using only the provided information below:\n" +
+            docs.join("\n");
 
-    const resp = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: question },
-        ],
-    });
+        const resp = await client.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+            { role: "system", content: systemMessage },
+            { role: "user", content: question },
+            ],
+        });
 
-    return resp.choices[0].message?.content;
+        return resp.choices[0].message?.content;
     });
 
     (async () => {
-    console.log(await rag("Where did Harrison work?"));
+        console.log(await rag("Where did Harrison work?"));
     })();
     ```
 
