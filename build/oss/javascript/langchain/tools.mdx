@@ -2,17 +2,13 @@
 title: Tools
 ---
 
-Many AI applications interact with users via natural language. However, some use cases require models to interface directly with external systems—such as APIs, databases, or file systems—using structured input.
+Tools extend what [agents](/oss/javascript/langchain/agents) can do—letting them fetch real-time data, execute code, query external databases, and take actions in the world.
 
-Tools are components that [agents](/oss/javascript/langchain/agents) call to perform actions. They extend model capabilities by letting them interact with the world through well-defined inputs and outputs.
+Under the hood, tools are callable functions with well-defined inputs and outputs that get passed to a [chat model](/oss/javascript/langchain/models). The model decides when to invoke a tool based on the conversation context, and what input arguments to provide.
 
-Tools encapsulate a callable function and its input schema. These can be passed to compatible [chat models](/oss/javascript/langchain/models), allowing the model to decide whether to invoke a tool and with what arguments. In these scenarios, tool calling enables models to generate requests that conform to a specified input schema.
-
-<Note>
-**Server-side tool use**
-
-Some chat models (e.g., [OpenAI](/oss/javascript/integrations/chat/openai), [Anthropic](/oss/javascript/integrations/chat/anthropic), and [Gemini](/oss/javascript/integrations/chat/google_generative_ai)) feature [built-in tools](/oss/javascript/langchain/models#server-side-tool-use) that are executed server-side, such as web search and code interpreters. Refer to the [provider overview](/oss/javascript/integrations/providers/overview) to learn how to access these tools with your specific chat model.
-</Note>
+<Tip>
+    For details on how models handle tool calls, see [Tool calling](/oss/javascript/langchain/models#tool-calling).
+</Tip>
 
 ## Create tools
 
@@ -40,20 +36,15 @@ const searchDatabase = tool(
 ```
 
 
-python
-### Reserved argument names
+<Note>
+    **Server-side tool use**
 
-The following parameter names are reserved and cannot be used as tool arguments. Using these names will cause runtime errors.
+    Some chat models (e.g., [OpenAI](/oss/javascript/integrations/chat/openai), [Anthropic](/oss/javascript/integrations/chat/anthropic), and [Gemini](/oss/javascript/integrations/chat/google_generative_ai)) feature [built-in tools](/oss/javascript/langchain/models#server-side-tool-use) that are executed server-side, such as web search and code interpreters. Refer to the [provider overview](/oss/javascript/integrations/providers/overview) to learn how to access these tools with your specific chat model.
+</Note>
 
-| Parameter name | Purpose |
-|----------------|---------|
-| `config` | Reserved for passing `RunnableConfig` to tools internally |
-| `runtime` | Reserved for `ToolRuntime` parameter (accessing state, context, store) |
 
-To access runtime information, use the [`ToolRuntime`](https://reference.langchain.com/python/langchain/tools/#langchain.tools.ToolRuntime) parameter instead of naming your own arguments `config` or `runtime`.
-:::
 
-## Accessing Context
+## Accessing context
 
 <Info>
 **Why this matters:** Tools are most powerful when they can access agent state, runtime context, and long-term memory. This enables tools to make context-aware decisions, personalize responses, and maintain information across conversations.
@@ -189,7 +180,7 @@ console.log(result);
 ```
 
 
-#### Stream Writer
+#### Stream writer
 
 
 
@@ -197,15 +188,17 @@ Stream custom updates from tools as they execute using `config.streamWriter`. Th
 
 ```ts
 import * as z from "zod";
-import { tool } from "langchain";
+import { tool, ToolRuntime } from "langchain";
 
 const getWeather = tool(
-  ({ city }, config) => {
-    const writer = config.streamWriter;
+  ({ city }, config: ToolRuntime) => {
+    const writer = config.writer;
 
     // Stream custom updates as the tool executes
-    writer(`Looking up data for city: ${city}`);
-    writer(`Acquired data for city: ${city}`);
+    if (writer) {
+      writer(`Looking up data for city: ${city}`);
+      writer(`Acquired data for city: ${city}`);
+    }
 
     return `It's always sunny in ${city}!`;
   },
@@ -222,8 +215,8 @@ const getWeather = tool(
 ---
 
 <Callout icon="pen-to-square" iconType="regular">
-    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/tools.mdx)
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/tools.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 <Tip icon="terminal" iconType="regular">
-    [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
 </Tip>

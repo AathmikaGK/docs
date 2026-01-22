@@ -65,10 +65,7 @@ To initialize a static model from a <Tooltip tip="A string that follows the form
 ```python wrap
 from langchain.agents import create_agent
 
-agent = create_agent(
-    "gpt-5",
-    tools=tools
-)
+agent = create_agent("openai:gpt-5", tools=tools)
 ```
 
 
@@ -312,6 +309,36 @@ agent = create_agent(
 
 When no [`system_prompt`](https://reference.langchain.com/python/langchain/agents/#langchain.agents.create_agent(system_prompt)) is provided, the agent will infer its task from the messages directly.
 
+The [`system_prompt`](https://reference.langchain.com/python/langchain/agents/#langchain.agents.create_agent(system_prompt)) parameter accepts either a `str` or a [`SystemMessage`](https://reference.langchain.com/python/langchain/messages/#langchain.messages.SystemMessage). Using a `SystemMessage` gives you more control over the prompt structure, which is useful for provider-specific features like [Anthropic's prompt caching](/oss/python/integrations/chat/anthropic#prompt-caching):
+
+```python wrap
+from langchain.agents import create_agent
+from langchain.messages import SystemMessage, HumanMessage
+
+literary_agent = create_agent(
+    model="anthropic:claude-sonnet-4-5",
+    system_prompt=SystemMessage(
+        content=[
+            {
+                "type": "text",
+                "text": "You are an AI assistant tasked with analyzing literary works.",
+            },
+            {
+                "type": "text",
+                "text": "<the entire contents of 'Pride and Prejudice'>",
+                "cache_control": {"type": "ephemeral"}
+            }
+        ]
+    )
+)
+
+result = literary_agent.invoke(
+    {"messages": [HumanMessage("Analyze the major themes in 'Pride and Prejudice'.")]}
+)
+```
+
+The `cache_control` field with `{"type": "ephemeral"}` tells Anthropic to cache that content block, reducing latency and costs for repeated requests that use the same system prompt.
+
 
 
 
@@ -385,11 +412,11 @@ Otherwise, the agent follows the LangGraph [Graph API](/oss/python/langgraph/use
 
 ### Structured output
 
-In some situations, you may want the agent to return an output in a specific format. LangChain provides strategies for structured output via the `response_format` parameter.
+In some situations, you may want the agent to return an output in a specific format. LangChain provides strategies for structured output via the [`response_format`](https://reference.langchain.com/python/langchain/agents/#langchain.agents.create_agent(response_format)) parameter.
 
 #### ToolStrategy
 
-`ToolStrategy` uses artificial tool calling to generate structured output. This works with any model that supports tool calling:
+`ToolStrategy` uses artificial tool calling to generate structured output. This works with any model that supports tool calling. `ToolStrategy` should be used when provider-native structured output (via [`ProviderStrategy`](#ProviderStrategy)) is not available or reliable.
 
 ```python wrap
 from pydantic import BaseModel
@@ -418,7 +445,7 @@ result["structured_response"]
 
 #### ProviderStrategy
 
-`ProviderStrategy` uses the model provider's native structured output generation. This is more reliable but only works with providers that support native structured output (e.g., OpenAI):
+`ProviderStrategy` uses the model provider's native structured output generation. This is more reliable but only works with providers that support native structured output:
 
 ```python wrap
 from langchain.agents.structured_output import ProviderStrategy
@@ -566,8 +593,8 @@ For comprehensive middleware documentation including decorators like [`@before_m
 ---
 
 <Callout icon="pen-to-square" iconType="regular">
-    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/agents.mdx)
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/agents.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 <Tip icon="terminal" iconType="regular">
-    [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
 </Tip>

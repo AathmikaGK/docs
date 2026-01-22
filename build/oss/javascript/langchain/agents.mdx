@@ -67,7 +67,7 @@ To initialize a static model from a <Tooltip tip="A string that follows the form
 import { createAgent } from "langchain";
 
 const agent = createAgent({
-  model: "gpt-5",
+  model: "openai:gpt-5",
   tools: []
 });
 ```
@@ -306,6 +306,36 @@ const agent = createAgent({
 
 When no `systemPrompt` is provided, the agent will infer its task from the messages directly.
 
+The `systemPrompt` parameter accepts either a `string` or a `SystemMessage`. Using a `SystemMessage` gives you more control over the prompt structure, which is useful for provider-specific features like [Anthropic's prompt caching](/oss/javascript/integrations/chat/anthropic#prompt-caching):
+
+```ts wrap
+import { createAgent } from "langchain";
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
+
+const literaryAgent = createAgent({
+  model: "anthropic:claude-sonnet-4-5",
+  systemPrompt: new SystemMessage({
+    content: [
+      {
+        type: "text",
+        text: "You are an AI assistant tasked with analyzing literary works.",
+      },
+      {
+        type: "text",
+        text: "<the entire contents of 'Pride and Prejudice'>",
+        cache_control: { type: "ephemeral" }
+      }
+    ]
+  })
+});
+
+const result = await literaryAgent.invoke({
+  messages: [new HumanMessage("Analyze the major themes in 'Pride and Prejudice'.")]
+});
+```
+
+The `cache_control` field with `{ type: "ephemeral" }` tells Anthropic to cache that content block, reducing latency and costs for repeated requests that use the same system prompt.
+
 
 #### Dynamic system prompt
 
@@ -419,20 +449,19 @@ Information stored in the state can be thought of as the [short-term memory](/os
 
 
 ```ts wrap
-import * as z from "zod";
-import { MessagesZodState } from "@langchain/langgraph";
+import { z } from "zod/v4";
+import { StateSchema, MessagesValue } from "@langchain/langgraph";
 import { createAgent } from "langchain";
-import { type BaseMessage } from "@langchain/core/messages";
 
-const customAgentState = z.object({
-  messages: MessagesZodState.shape.messages,
+const CustomAgentState = new StateSchema({
+  messages: MessagesValue,
   userPreferences: z.record(z.string(), z.string()),
 });
 
-const CustomAgentState = createAgent({
+const customAgent = createAgent({
   model: "gpt-4o",
   tools: [],
-  stateSchema: customAgentState,
+  stateSchema: CustomAgentState,
 });
 ```
 
@@ -497,8 +526,8 @@ For comprehensive middleware documentation including hooks like `beforeModel`, `
 ---
 
 <Callout icon="pen-to-square" iconType="regular">
-    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/agents.mdx)
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/agents.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 <Tip icon="terminal" iconType="regular">
-    [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
 </Tip>

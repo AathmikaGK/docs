@@ -59,17 +59,18 @@ const agent = createAgent({
 
 
 <Tip>
-The `fraction` conditions for `trigger` and `keep` (shown below) rely on a chat model's [profile data](/oss/javascript/langchain/models#model-profiles) if using `langchain@1.1.0`. If data are not available, use another condition or specify manually:
-```typescript
-const customProfile: ModelProfile = {
-    maxInputTokens: 100_000,
-    // ...
-}
-model = await initChatModel("...", {
-    profile: customProfile,
-});
-```
+    The `fraction` conditions for `trigger` and `keep` (shown below) rely on a chat model's [profile data](/oss/javascript/langchain/models#model-profiles) if using `langchain@1.1.0`. If data are not available, use another condition or specify manually:
+    ```typescript
+    const customProfile: ModelProfile = {
+        maxInputTokens: 100_000,
+        // ...
+    }
+    model = await initChatModel("...", {
+        profile: customProfile,
+    });
+    ```
 </Tip>
+
 <ParamField body="model" type="string | BaseChatModel" required>
     Model for generating summaries. Can be a model identifier string (e.g., `'openai:gpt-4o-mini'`) or a `BaseChatModel` instance.
 </ParamField>
@@ -128,11 +129,11 @@ model = await initChatModel("...", {
 The summarization middleware monitors message token counts and automatically summarizes older messages when thresholds are reached.
 
 **Trigger conditions** control when summarization runs:
-- Single condition object (all properties must be met - AND logic)
+- Single condition object (specified must be met)
 - Array of conditions (any condition must be met - OR logic)
 - Each condition can use `fraction` (of model's context size), `tokens` (absolute count), or `messages` (message count)
 
-**Keep conditions** control how much context to preserve (specify exactly one):
+**Keep condition** control how much context to preserve (specify exactly one):
 - `fraction` - Fraction of model's context size to keep
 - `tokens` - Absolute token count to keep
 - `messages` - Number of recent messages to keep
@@ -163,7 +164,6 @@ const agent2 = createAgent({
     summarizationMiddleware({
       model: "gpt-4o-mini",
       trigger: [
-        { tokens: 5000, messages: 3 },
         { tokens: 3000, messages: 6 },
       ],
       keep: { messages: 20 },
@@ -188,7 +188,6 @@ const agent3 = createAgent({
 
 </Accordion>
 
-
 ### Human-in-the-loop
 
 Pause agent execution for human approval, editing, or rejection of tool calls before they execute. [Human-in-the-loop](/oss/javascript/langchain/human-in-the-loop) is useful for the following:
@@ -208,18 +207,26 @@ Pause agent execution for human approval, editing, or rejection of tool calls be
 ```typescript
 import { createAgent, humanInTheLoopMiddleware } from "langchain";
 
+function readEmailTool(emailId: string): string {
+  /** Mock function to read an email by its ID. */
+  return `Email content for ID: ${emailId}`;
+}
+
+function sendEmailTool(recipient: string, subject: string, body: string): string {
+  /** Mock function to send an email. */
+  return `Email sent to ${recipient} with subject '${subject}'`;
+}
+
 const agent = createAgent({
   model: "gpt-4o",
   tools: [readEmailTool, sendEmailTool],
   middleware: [
     humanInTheLoopMiddleware({
       interruptOn: {
-        send_email: {
-          allowAccept: true,
-          allowEdit: true,
-          allowRespond: true,
+        sendEmailTool: {
+          allowedDecisions: ["approve", "edit", "reject"],
         },
-        read_email: false,
+        readEmailTool: false,
       }
     })
   ]
@@ -230,6 +237,13 @@ const agent = createAgent({
 <Tip>
     For complete examples, configuration options, and integration patterns, see the [Human-in-the-loop documentation](/oss/javascript/langchain/human-in-the-loop).
 </Tip>
+
+
+
+<Callout icon="circle-play" iconType="solid">
+    Watch this [video guide](https://www.youtube.com/watch?v=tdOeUVERukA) demonstrating Human-in-the-loop middleware behavior.
+</Callout>
+
 
 ### Model call limit
 
@@ -243,10 +257,12 @@ Limit the number of model calls to prevent infinite loops or excessive costs. Mo
 
 ```typescript
 import { createAgent, modelCallLimitMiddleware } from "langchain";
+import { MemorySaver } from "@langchain/langgraph";
 
 const agent = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  checkpointer: new MemorySaver(), // Required for thread limiting
+  tools: [],
   middleware: [
     modelCallLimitMiddleware({
       threadLimit: 10,
@@ -256,6 +272,13 @@ const agent = createAgent({
   ],
 });
 ```
+
+
+
+
+<Callout icon="circle-play" iconType="solid">
+    Watch this [video guide](https://www.youtube.com/watch?v=x5jLQTFXR0Y) demonstrating Model Call Limit middleware behavior.
+</Callout>
 
 
 <Accordion title="Configuration options">
@@ -305,6 +328,13 @@ const agent = createAgent({
   ],
 });
 ```
+
+
+
+
+<Callout icon="circle-play" iconType="solid">
+    Watch this [video guide](https://www.youtube.com/watch?v=oL6am5UqODY) demonstrating Tool Call Limit middleware behavior.
+</Callout>
 
 
 <Accordion title="Configuration options">
@@ -383,7 +413,7 @@ import { createAgent, modelFallbackMiddleware } from "langchain";
 
 const agent = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  tools: [],
   middleware: [
     modelFallbackMiddleware(
       "gpt-4o-mini",
@@ -392,6 +422,8 @@ const agent = createAgent({
   ],
 });
 ```
+
+
 
 
 <Accordion title="Configuration options">
@@ -415,7 +447,6 @@ The middleware accepts a variable number of string arguments representing fallba
 
 </Accordion>
 
-
 ### PII detection
 
 Detect and handle Personally Identifiable Information (PII) in conversations using configurable strategies. PII detection is useful for the following:
@@ -431,7 +462,7 @@ import { createAgent, piiMiddleware } from "langchain";
 
 const agent = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  tools: [],
   middleware: [
     piiMiddleware("email", { strategy: "redact", applyToInput: true }),
     piiMiddleware("credit_card", { strategy: "mask", applyToInput: true }),
@@ -459,7 +490,7 @@ import { createAgent, piiMiddleware, type PIIMatch } from "langchain";
 // Method 1: Regex pattern string
 const agent1 = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  tools: [],
   middleware: [
     piiMiddleware("api_key", {
       detector: "sk-[a-zA-Z0-9]{32}",
@@ -471,7 +502,7 @@ const agent1 = createAgent({
 // Method 2: RegExp object
 const agent2 = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  tools: [],
   middleware: [
     piiMiddleware("phone_number", {
       detector: /\+?\d{1,3}[\s.-]?\d{3,4}[\s.-]?\d{4}/,
@@ -503,7 +534,7 @@ function detectSSN(content: string): PIIMatch[] {
 
 const agent3 = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  tools: [],
   middleware: [
     piiMiddleware("ssn", {
       detector: detectSSN,
@@ -537,12 +568,12 @@ function detector(content: string): PIIMatch[] {
 
 
 <Tip>
-For custom detectors:
+    For custom detectors:
 
-- Use regex strings for simple patterns
-- Use RegExp objects when you need flags (e.g., case-insensitive matching)
-- Use custom functions when you need validation logic beyond pattern matching
-- Custom functions give you full control over detection logic and can implement complex validation rules
+    - Use regex strings for simple patterns
+    - Use RegExp objects when you need flags (e.g., case-insensitive matching)
+    - Use custom functions when you need validation logic beyond pattern matching
+    - Custom functions give you full control over detection logic and can implement complex validation rules
 </Tip>
 
 <Accordion title="Configuration options">
@@ -609,6 +640,13 @@ const agent = createAgent({
   middleware: [todoListMiddleware()],
 });
 ```
+
+
+
+
+<Callout icon="circle-play" iconType="solid">
+    Watch this [video guide](https://www.youtube.com/watch?v=dwvhZ1z_Pas) demonstrating To-do List middleware behavior.
+</Callout>
 
 
 <Accordion title="Configuration options">
@@ -846,7 +884,6 @@ const strictRetry = toolRetryMiddleware({
 
 </Accordion>
 
-
 ### Model retry
 
 Automatically retry failed model calls with configurable exponential backoff. Model retry is useful for the following:
@@ -995,7 +1032,6 @@ const strictRetry = modelRetryMiddleware({
 
 </Accordion>
 
-
 ### LLM tool emulator
 
 Emulate tool execution using an LLM for testing purposes, replacing actual tool calls with AI-generated responses. LLM tool emulators are useful for the following:
@@ -1101,7 +1137,7 @@ const agent5 = createAgent({
   tools: [getWeather, sendEmail],
   middleware: [
     toolEmulatorMiddleware({
-      model: "anthropic:claude-sonnet-4-5-20250929",
+      model: "claude-sonnet-4-5-20250929",
     }),
   ],
 });
@@ -1125,7 +1161,7 @@ import { createAgent, contextEditingMiddleware, ClearToolUsesEdit } from "langch
 
 const agent = createAgent({
   model: "gpt-4o",
-  tools: [...],
+  tools: [],
   middleware: [
     contextEditingMiddleware({
       edits: [
@@ -1216,155 +1252,25 @@ const agent = createAgent({
 
 
 
-
 ## Provider-specific middleware
 
-These middleware are optimized for specific LLM providers.
+These middleware are optimized for specific LLM providers. See each provider's documentation for full details and examples.
 
-### Anthropic
-
-Middleware specifically designed for Anthropic's Claude models.
+<Columns cols={2}>
 
 
 
-| Middleware | Description |
-|------------|-------------|
-| [Prompt caching](#prompt-caching) | Reduce costs by caching repetitive prompt prefixes |
+    <Card title="Anthropic" href="/oss/javascript/integrations/middleware/anthropic" icon="anthropic" arrow>
+        Prompt caching, bash tool, text editor, memory, and file search middleware for Claude models.
+    </Card>
 
-
-
-#### Prompt caching
-
-Reduce costs and latency by caching static or repetitive prompt content (like system prompts, tool definitions, and conversation history) on Anthropic's servers. This middleware implements a **conversational caching strategy** that places cache breakpoints after the most recent message, allowing the entire conversation history (including the latest user message) to be cached and reused in subsequent API calls. Prompt caching is useful for the following:
-
-- Applications with long, static system prompts that don't change between requests
-- Agents with many tool definitions that remain constant across invocations
-- Conversations where early message history is reused across multiple turns
-- High-volume deployments where reducing API costs and latency is critical
-
-<Info>
-    Learn more about [Anthropic prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching#cache-limitations) strategies and limitations.
-</Info>
-
-
-
-```typescript
-import { createAgent, anthropicPromptCachingMiddleware } from "langchain";
-
-const agent = createAgent({
-  model: "claude-sonnet-4-5-20250929",
-  prompt: "<Your long system prompt here>",
-  middleware: [anthropicPromptCachingMiddleware({ ttl: "5m" })],
-});
-```
-
-
-<Accordion title="Configuration options">
-
-
-
-<ParamField body="ttl" type="string" default="5m">
-    Time to live for cached content. Valid values: `'5m'` or `'1h'`
-</ParamField>
-
-
-</Accordion>
-
-<Accordion title="Full example">
-
-The middleware caches content up to and including the latest message in each request. On subsequent requests within the TTL window (5 minutes or 1 hour), previously seen content is retrieved from cache rather than reprocessed, significantly reducing costs and latency.
-
-**How it works:**
-1. First request: System prompt, tools, and the user message "Hi, my name is Bob" are sent to the API and cached
-2. Second request: The cached content (system prompt, tools, and first message) is retrieved from cache. Only the new message "What's my name?" needs to be processed, plus the model's response from the first request
-3. This pattern continues for each turn, with each request reusing the cached conversation history
-
-
-
-```typescript
-import { createAgent, HumanMessage, anthropicPromptCachingMiddleware } from "langchain";
-
-const LONG_PROMPT = `
-Please be a helpful assistant.
-
-<Lots more context ...>
-`;
-
-const agent = createAgent({
-  model: "claude-sonnet-4-5-20250929",
-  prompt: LONG_PROMPT,
-  middleware: [anthropicPromptCachingMiddleware({ ttl: "5m" })],
-});
-
-// First invocation: Creates cache with system prompt, tools, and "Hi, my name is Bob"
-await agent.invoke({
-  messages: [new HumanMessage("Hi, my name is Bob")]
-});
-
-// Second invocation: Reuses cached system prompt, tools, and previous messages
-// Only processes the new message "What's my name?" and the previous AI response
-const result = await agent.invoke({
-  messages: [new HumanMessage("What's my name?")]
-});
-```
-
-
-</Accordion>
-
-
-
-### OpenAI
-
-Middleware specifically designed for OpenAI models.
-
-| Middleware | Description |
-|------------|-------------|
-| [Content moderation](#content-moderation) | Moderate agent traffic using OpenAI's moderation endpoint |
-
-#### Content moderation
-
-Moderate agent traffic (user input, model output, and tool results) using OpenAI's moderation endpoint to detect and handle unsafe content. Content moderation is useful for the following:
-
-- Applications requiring content safety and compliance
-- Filtering harmful, hateful, or inappropriate content
-- Customer-facing agents that need safety guardrails
-- Meeting platform moderation requirements
-
-<Info>
-    Learn more about [OpenAI's moderation models](https://platform.openai.com/docs/guides/moderation) and categories.
-</Info>
-
-
-
-<Accordion title="Configuration options">
-
-
-
-</Accordion>
-
-<Accordion title="Full example">
-
-The middleware integrates OpenAI's moderation endpoint to check content at different stages:
-
-**Moderation stages:**
-- `check_input` - User messages before model call
-- `check_output` - AI messages after model call
-- `check_tool_results` - Tool outputs before model call
-
-**Exit behaviors:**
-- `'end'` (default) - Stop execution with violation message
-- `'error'` - Raise exception for application handling
-- `'replace'` - Replace flagged content and continue
-
-
-
-</Accordion>
+</Columns>
 
 ---
 
 <Callout icon="pen-to-square" iconType="regular">
-    [Edit the source of this page on GitHub.](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/middleware/built-in.mdx)
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/middleware/built-in.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 <Tip icon="terminal" iconType="regular">
-    [Connect these docs programmatically](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+    [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
 </Tip>
